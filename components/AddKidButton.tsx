@@ -1,5 +1,6 @@
 import STYLES from "@/constants/styles";
 import useTranslation from "@/localization";
+import { useRouter } from "expo-router";
 import { Text, TouchableHighlight, TouchableNativeFeedback, StyleSheet, TouchableOpacity } from "react-native";
 
 const AddKidButton = () => {

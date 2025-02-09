@@ -3,7 +3,7 @@
     "name": "aba-board",
     "slug": "aba-board",
     "version": "1.0.0",
-    "orientation": "portrait",
+    "orientation": "landscape",
     "icon": "./assets/images/icon.png",
     "scheme": "myapp",
     "userInterfaceStyle": "automatic",
@@ -42,6 +42,9 @@
     ],
     "experiments": {
       "typedRoutes": true
+    },
+    "androidNavigationBar": {
+      "visible": "immersive"
     }
   }
 }

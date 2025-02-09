@@ -1,7 +1,7 @@
-import STYLES from "@/constants/styles";
 import useTranslation from "@/localization";
-import { Link, useNavigation, useRouter } from "expo-router";
-import { Text, TouchableOpacity } from "react-native"
+import { useRouter } from "expo-router";
+import { TouchableOpacity } from "react-native"
+import EvilIcons from '@expo/vector-icons/EvilIcons';
 
 const SettingsButton = () => {
     const router = useRouter();
@@ -12,8 +12,8 @@ const SettingsButton = () => {
     }
     
     return (
-        <TouchableOpacity style={STYLES.button} onPress={onPress}>
-            <Text>{t('Settings')}</Text>
+        <TouchableOpacity onPressIn={onPress}>
+            <EvilIcons name="gear" size={24} color="black" />
         </TouchableOpacity>
     )
 }
