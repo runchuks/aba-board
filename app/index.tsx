@@ -1,23 +1,24 @@
-import KidsCard from "@/components/KidsCard";
+import UserCard from "@/components/UserCard";
 import SettingsButton from "@/components/SettingsButton";
 import useTranslation from "@/localization";
 import STORAGE from "@/storage";
 import { useNavigation } from "expo-router";
 import { useEffect, useMemo, useState } from "react";
-import { Button, FlatList, RefreshControl, ScrollView, StyleSheet, Text, TouchableOpacity, View } from "react-native";
-import { useDispatch, useSelector } from "react-redux";
+import { RefreshControl, ScrollView, StyleSheet, View } from "react-native";
+import {  useSelector } from "react-redux";
+import { User } from "@/types";
 
 
 export default function Index() {
-  const { kids, lang } = useSelector(state => state.global)
+  const { lang } = useSelector(state => state.global)
   const navigation = useNavigation()
   const t = useTranslation()
 
-  const [users, setUsers] = useState([]);
+  const [users, setUsers] = useState<User[]>([]);
   const [refreshing, setRefreshing] = useState(false);
 
   const renderKids = useMemo(() => {
-    return users.map(user => <KidsCard {...user} key={user.id}/>)
+    return users.map(user => <UserCard {...user} key={user.id}/>)
   }, [users])
 
   const refreshUsers = () => {

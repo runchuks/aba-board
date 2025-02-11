@@ -2,17 +2,9 @@ import { FC } from "react"
 import { StyleSheet, Text, TouchableOpacity, View } from "react-native"
 import AntDesign from '@expo/vector-icons/AntDesign';
 import { useRouter } from "expo-router";
+import { User } from "@/types";
 
-interface Props {
-    id: number
-    name: string
-    added: number
-    advanced: boolean
-    image: string
-    archived: boolean
-}
-
-const KidsCard: FC<Props> = ({ id, name }) => {
+const UserCard: FC<User> = ({ id, name }) => {
     const router = useRouter()
 
     const onPress = () => {
@@ -54,4 +46,4 @@ const style = StyleSheet.create({
     }
 })
 
-export default KidsCard
+export default UserCard

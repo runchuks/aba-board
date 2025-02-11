@@ -8,6 +8,7 @@ import { useDispatch, useSelector } from "react-redux";
 import * as SecureStore from 'expo-secure-store';
 import { DEFAULT_STARTER_BOARD } from "@/constants/global";
 import STORAGE from "@/storage";
+import * as Speech from 'expo-speech';
 
 const EditKid = () => {
     const { id } = useLocalSearchParams();

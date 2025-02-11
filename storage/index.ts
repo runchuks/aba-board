@@ -1,3 +1,4 @@
+import { AddUser, Board, Group, User } from "@/types";
 import * as SQLite from "expo-sqlite";
 
 let database: SQLite.SQLiteDatabase | null = null; // Store the database instance
@@ -62,7 +63,7 @@ const initDb = async () => {
   }
 };
 
-const addUser = async ({ name, image, advanced, archived }) => {
+const addUser = async ({ name, image, advanced, archived }: AddUser) => {
   try {
     const db = await getDatabase();
     const added = Date.now();
@@ -80,18 +81,11 @@ const addUser = async ({ name, image, advanced, archived }) => {
   }
 };
 
-const fetchUsers = async () => {
+const fetchUsers = async (): Promise<User[]> => {
     try {
         const db = await getDatabase();
         const result = await db.getAllAsync("SELECT * FROM users WHERE archived=0;");
-        return result as {
-            id: number;
-            name: string;
-            image: string;
-            added: number;
-            advanced: number;
-            archived: number;
-        }[];
+        return result as User[];
     } catch (error) {
         console.error("Error fetching users:", error);
         return [];
@@ -219,12 +213,12 @@ const createStarterBoard = async (userId: number) => {
   }
 }
 
-const getBoard = async (userId: number) => {
+const getBoard = async (userId: number): Promise<Board | null> => {
   try {
     const db = await getDatabase();
 
     // Query to fetch the board info for the given userId
-    const boardResult = await db.getAllAsync(`
+    const boardResult: Board[] = await db.getAllAsync(`
       SELECT * 
       FROM board 
       WHERE userId = ?;
@@ -234,7 +228,7 @@ const getBoard = async (userId: number) => {
       const board = boardResult[0]; // Assuming there's only one board for the userId
 
       // Query to fetch the associated groups for the board
-      const groupResult = await db.getAllAsync(`
+      const groupResult: Group[] = await db.getAllAsync(`
         SELECT \`group\`.*
         FROM groups AS \`group\`
         JOIN board_groups ON \`group\`.id = board_groups.groupId

@@ -1,16 +1,14 @@
 import STYLES from "@/constants/styles"
 import useTranslation from "@/localization"
-import { FlatList, StyleSheet, Text, TouchableOpacity, View } from "react-native";
-import Feather from '@expo/vector-icons/Feather';
-import { useDispatch, useSelector } from "react-redux";
-import { useEffect, useMemo, useState } from "react";
-import { setKids } from "@/store/slices/global";
-import Ionicons from '@expo/vector-icons/Ionicons';
-import MaterialCommunityIcons from '@expo/vector-icons/MaterialCommunityIcons';
-import { useNavigation, useRouter } from "expo-router";
-import STORAGE from "@/storage";
-import moment from 'moment';
-import Entypo from '@expo/vector-icons/Entypo';
+import { StyleSheet, Text, TouchableOpacity, View } from "react-native"
+import Feather from '@expo/vector-icons/Feather'
+import { useEffect, useMemo, useState } from "react"
+import MaterialCommunityIcons from '@expo/vector-icons/MaterialCommunityIcons'
+import { useNavigation, useRouter } from "expo-router"
+import STORAGE from "@/storage"
+import moment from 'moment'
+import Entypo from '@expo/vector-icons/Entypo'
+import { User } from "@/types"
 
 const KidsSettings = () => {
     const router = useRouter();
@@ -18,14 +16,13 @@ const KidsSettings = () => {
     const t = useTranslation()
     const navigation = useNavigation()
 
-    const [users, setUsers] = useState([]);
+    const [users, setUsers] = useState<User[]>([]);
 
     const addUser = () => {
-        // dispatch(setKids([...kids, { id: 101, name: 'test' }]))
         router.navigate(`/add-kid`)
     }
 
-    const openUser = (id) => {
+    const openUser = (id: number) => {
         router.navigate(`/edit-kid/${id}`)
     }
 

@@ -1,64 +1,44 @@
 import { useLocalSearchParams, useNavigation, useRouter } from "expo-router";
-import { useEffect, useMemo, useReducer, useState } from "react";
-import { StyleSheet, Text, TouchableOpacity, View } from "react-native"
+import { useEffect, useMemo, useState } from "react";
+import { StyleSheet, TouchableOpacity, View } from "react-native"
 import Ionicons from '@expo/vector-icons/Ionicons';
 import MaterialCommunityIcons from '@expo/vector-icons/MaterialCommunityIcons';
-import * as SecureStore from 'expo-secure-store';
-import { DEFAULT_STARTER_BOARD } from "@/constants/global";
 import GroupSelector from "@/components/GroupSelector";
 import {Dimensions} from 'react-native';
 import STORAGE from "@/storage";
+import { Group } from "@/types";
 
 const windowHeight = Dimensions.get('window').height;
 
-const activeGroupReducer = (state, action) => {
-    switch (action.type) {
-        case 'set-color':
-            return {
-                ...state,
-                color: action.payload,
-            }
-        case 'set-title':
-            return {
-                ...state,
-                title: action.payload
-            }
-        case 'set-group':
-            return {
-                ...state,
-                title: action.payload.title,
-                color: action.payload.color
-            }
-        default:
-            return state
-    }
-}
-
 const Board = () => {
-
     const { userId } = useLocalSearchParams();
     const navigation = useNavigation();
     const router = useRouter()
 
-    const [board, setBoard] = useState<any>(null);
-    // const [activeGroup, dispatch] = useReducer(activeGroupReducer,{})
+    const [groups, setGroups] = useState<Group[]>([])
+    const [activeGroupId, setActiveGroupId] = useState<number | null>(null)
+    const [boardId, serBoardId] = useState<number | null>(null)
 
-    const [groups, setGroups] = useState([])
-    const [activeGroup, setActiveGroup] = useState([])
+    const activeGroup = useMemo(() => {
+        return groups.find(({ id }) => id === activeGroupId) || null
+    }, [activeGroupId])
 
     const bacgroundColor = useMemo(() => {
-        const g = groups.find(({ id }) => id === activeGroup)
+        const g = groups.find(({ id }) => id === activeGroupId)
         return g?.color || 'red'
     }, [activeGroup]);
 
     const refreshBoard = async () => {
-        STORAGE.getBoard(userId).then((board) => {
-            // console.log({ board, groups: board.groups })
-            setGroups(board.groups)
-            setActiveGroup(board.groups[0].id)
+        STORAGE.getBoard(Number(userId)).then((board) => {
+            if (board) {
+                serBoardId(board.id)
+                if (board.groups) {
+                    setGroups(board.groups)
+                    setActiveGroupId(board.groups[0].id)
+                }
+            }
         })
     }
-
 
     useEffect(() => {
         refreshBoard()
@@ -71,6 +51,10 @@ const Board = () => {
     const goBack = () => {
         router.back();
     }
+
+    const goToEditMode = () => {
+        router.navigate(`/board/edit/${boardId}`);
+    }
     
     return (
         <View>
@@ -78,7 +62,7 @@ const Board = () => {
                 <TouchableOpacity onPress={goBack} style={style.headBtn}>
                     <Ionicons name="arrow-back-outline" size={24} color="black" />
                 </TouchableOpacity>
-                <TouchableOpacity style={style.headBtn}>
+                <TouchableOpacity style={style.headBtn} onPress={goToEditMode}>
                     <MaterialCommunityIcons name="pencil-outline" size={24} color="black" />
                 </TouchableOpacity>
             </View>
@@ -93,8 +77,8 @@ const Board = () => {
                                 title={group.name}
                                 color={group.color}
                                 key={index}
-                                onPress={() => setActiveGroup(group.id)}
-                                active={group.id === activeGroup}
+                                onPress={() => setActiveGroupId(group.id)}
+                                active={group.id === activeGroupId}
                             />
                         )
                     )}
@@ -123,7 +107,8 @@ const style = StyleSheet.create({
     groups: {
         height: 40,
         flexDirection: "row",
-        backgroundColor: "grey"
+        backgroundColor: "grey",
+        gap: 5,
     },
     board: {
         height: windowHeight - 150 - 50
