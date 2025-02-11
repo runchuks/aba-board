@@ -10,5 +10,4 @@ export interface GlobalState {
     loading: boolean
     lang: LANG
     masterPin: string
-    kids: Kid[]
 }

@@ -8,7 +8,6 @@ const initialState = {
     loading: false,
     lang: SecureStore.getItem('lang') || DEFAULT_LANG,
     masterPin: SecureStore.getItem('masterPin') || DEFAULT_PIN,
-    kids: SecureStore.getItem('kids') ? JSON.parse(SecureStore.getItem('kids') as string) : [],
 } as GlobalState
 
 const globalSlice = createSlice({
@@ -18,13 +17,9 @@ const globalSlice = createSlice({
     setLang: (state, action: PayloadAction<LANG>) => {
         SecureStore.setItem('lang', action.payload)
         state.lang = action.payload;
-    },
-    setKids: (state, action: PayloadAction<Kid[]>) => {
-      SecureStore.setItem('kids', JSON.stringify(action.payload))
-      state.kids = action.payload
-    },
+    }
   },
 });
 
-export const { setLang, setKids } = globalSlice.actions;
+export const { setLang } = globalSlice.actions;
 export default globalSlice.reducer;

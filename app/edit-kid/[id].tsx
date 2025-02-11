@@ -7,10 +7,9 @@ import { Text, View, TextInput, Button, StyleSheet, Alert, Keyboard } from "reac
 import { useDispatch, useSelector } from "react-redux";
 import * as SecureStore from 'expo-secure-store';
 import { DEFAULT_STARTER_BOARD } from "@/constants/global";
+import STORAGE from "@/storage";
 
 const EditKid = () => {
-    const { kids } = useSelector(state => state.global)
-    const dispatch = useDispatch()
     const { id } = useLocalSearchParams();
     const navigation = useNavigation();
     const router = useRouter()
@@ -20,12 +19,12 @@ const EditKid = () => {
     const [resetBoardActive, setResetBoardActive] = useState(true);
 
     useEffect(() => {
-        const findKid = kids.find(kid => kid.id === Number(id))
-        if (findKid) {
-            setName(findKid.name)
-        } else {
-            router.back()
-        }
+        STORAGE.getUserById(Number(id)).then(user => {
+            setName(user.name)
+        })
+        .catch(() => {
+            router.back();
+        })
     }, [id, navigation]);
 
     useEffect(() => {
@@ -36,26 +35,20 @@ const EditKid = () => {
 
     const edit = () => {
         Keyboard.dismiss();
-        const newKid = {
-            id: Number(id),
-            name,
-        }
-        const newArray = kids.map(kid => 
-            kid.id === Number(id) 
-                ? { ...kid, ...newKid }  // Merge new data into the matched object
-                : kid
-        );
-        dispatch(setKids(newArray));
-        Alert.alert(t('User edited'),'',[
-            {
-                text: t('Ok'),
-                onPress: () => {},
-            },
-            {
-                text: t('Back to settings'),
-                onPress: () => router.back(),
-            },
-        ])
+        STORAGE.updateUserById(id, {
+            name
+        }).then(() => {
+            Alert.alert(t('User edited'),'',[
+                {
+                    text: t('Ok'),
+                    onPress: () => {},
+                },
+                {
+                    text: t('Back to settings'),
+                    onPress: () => router.back(),
+                },
+            ])
+        })
     }
 
     const deleteUser = () => {
@@ -67,9 +60,7 @@ const EditKid = () => {
             {
                 text: t('Delete'),
                 onPress: async () => {
-                    const newKidArray = kids.filter(kid => kid.id !== Number(id));
-                    dispatch(setKids(newKidArray))
-                    SecureStore.deleteItemAsync(`board-${id}`).then(() => {
+                    STORAGE.deleteUserById(id).then(() => {
                         router.back()
                     })
                     .catch(() => {
@@ -91,8 +82,8 @@ const EditKid = () => {
             {
                 text: t('Reset'),
                 onPress: () => {
-                    SecureStore.setItem(`board-${id}`, JSON.stringify(DEFAULT_STARTER_BOARD))
-                    setResetBoardActive(false);
+                    STORAGE.createStarterBoard(Number(id));
+                    // setResetBoardActive(false);
                 },
                 style: "destructive"
             },

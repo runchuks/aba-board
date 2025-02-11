@@ -1,5 +1,6 @@
 import STYLES from "@/constants/styles"
 import useTranslation from "@/localization"
+import STORAGE from "@/storage"
 import { setKids } from "@/store/slices/global"
 import { useNavigation, useRouter } from "expo-router"
 import { useEffect, useState } from "react"
@@ -18,21 +19,21 @@ const AddKid = () => {
         navigation.setOptions({ title: t('Add user') });
     }, [lang])
 
-    const add = () => {
+    const add = async () => {
         if (!name) {
             Alert.alert(t('Can`t add nameless user'))
             return
         }
-        const maxId = Math.max(...kids.map(kid => Number(kid.id)), 0)
-        dispatch(setKids([
-            ...kids,
-            {
-                id: maxId+1,
-                name,
-                added: new Date().getTime(),
-            }
-        ]))
-        router.back()
+
+        STORAGE.addUser({
+            name,
+            image: '',
+            advanced: false,
+            archived: false,
+        }).then(() => {
+            router.back()
+        })
+        
     }
 
     return (

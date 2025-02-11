@@ -6,6 +6,10 @@ import { useRouter } from "expo-router";
 interface Props {
     id: number
     name: string
+    added: number
+    advanced: boolean
+    image: string
+    archived: boolean
 }
 
 const KidsCard: FC<Props> = ({ id, name }) => {

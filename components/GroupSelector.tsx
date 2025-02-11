@@ -1,22 +1,48 @@
 import { FC } from "react"
-import { StyleSheet, Text, View } from "react-native"
+import { StyleSheet, Text, TouchableOpacity, View } from "react-native"
 
 interface Props {
     title: string
     color: string
+    onPress: () => void
+    active: boolean
 }
 
-const GroupSelector: FC<Props> = ({ title, color }) => {
+const GroupSelector: FC<Props> = ({ title, color, onPress, active }) => {
     return (
-        <View style={[style.wrap, { backgroundColor: color }]}>
-            <Text>{title}</Text>
-        </View>
+        <TouchableOpacity
+            style={[
+                style.wrap,
+                { backgroundColor: color },
+            ]}
+            onPress={onPress}
+        >
+            <Text 
+                numberOfLines={1} 
+                style={[
+                    style.text,
+                    active && style.active,
+                ]}
+            >
+                {title}
+            </Text>
+        </TouchableOpacity>
     )
 }
 
 const style = StyleSheet.create({
     wrap: {
-
+        width: 100,
+        justifyContent: "center",
+        alignItems: "center",
+        borderBottomLeftRadius: 20,
+        borderBottomRightRadius: 20,
+    },
+    text: {
+        fontSize: 16
+    },
+    active: {
+        fontWeight: "bold"
     }
 })
 
