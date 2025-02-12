@@ -5,7 +5,8 @@ import STORAGE from "@/storage";
 import { Board } from "@/types";
 import { useLocalSearchParams, useNavigation, useRouter } from "expo-router";
 import { useEffect, useMemo, useState } from "react";
-import { ScrollView, Text, View, StyleSheet } from "react-native"
+import { ScrollView, Text, View, StyleSheet, TouchableOpacity, RefreshControl } from "react-native"
+import AntDesign from '@expo/vector-icons/AntDesign';
 
 const EditBoard = () => {
     const { unlocked, LockScreen } = useLock();
@@ -16,16 +17,23 @@ const EditBoard = () => {
 
     const [board, setBoard] = useState<Board | null>(null);
     const [editingGroup, setEditingGroup] = useState<number | null>(null)
+    const [refreshing, setRefreshing] = useState<boolean>(false)
 
-    useEffect(() => {
-        navigation.setOptions({ title: t('Edit board') });
+    const refreshBoard = () => {
+        setRefreshing(true)
         STORAGE.getBoardById(Number(boardId)).then(result => {
             if (result) {
                 console.log({ result })
                 navigation.setOptions({ title: `${t('Edit board')}: ${result.id}` });
                 setBoard(result);
+                setRefreshing(false)
             }
         })
+    }
+
+    useEffect(() => {
+        navigation.setOptions({ title: t('Edit board') });
+        refreshBoard()
     }, [boardId, navigation])
 
     useEffect(() => {
@@ -42,20 +50,36 @@ const EditBoard = () => {
                     onEdit={setEditingGroup}
                     editMode={group.id === editingGroup}
                     key={group.id}
+                    onRefresh={refreshBoard}
+                    lists={group.lists}
                 />
             ))
         }
         return []
     }, [JSON.stringify(board), editingGroup]);
 
+    const addGroup = () => {
+        STORAGE.addGroup(Number(boardId), t('New group')).then(() => {
+            refreshBoard()
+        })
+    }
+
     if (!unlocked) return LockScreen;
 
     return (
         <View style={style.wrap}>
-            <ScrollView style={{width: '100%'}}>
+            <ScrollView
+                style={{width: '100%'}}
+                refreshControl={
+                    <RefreshControl refreshing={refreshing} onRefresh={refreshBoard} />
+                }
+            >
                 <View style={{ alignItems: "center" }}>
                     <View style={style.innerWrap}>
                         {renderGroups}
+                        <TouchableOpacity style={style.addGroup} onPress={addGroup}>
+                            <AntDesign name="plus" size={24} color="grey" />
+                        </TouchableOpacity>
                     </View>
                 </View>
             </ScrollView>
@@ -69,9 +93,15 @@ const style = StyleSheet.create({
         width: '100%',
     },
     innerWrap: {
-        width: 600,
+        width: '100%',
         marginBottom: 50,
-        paddingVertical: 10
+        padding: 15
+    },
+    addGroup: {
+        borderWidth: 2,
+        borderColor: 'grey',
+        alignItems: "center",
+        paddingVertical: 5
     }
 })
 

@@ -1,6 +1,6 @@
 import { useLocalSearchParams, useNavigation, useRouter } from "expo-router";
 import { useEffect, useMemo, useState } from "react";
-import { StyleSheet, TouchableOpacity, View } from "react-native"
+import { ScrollView, StyleSheet, Text, TouchableOpacity, View } from "react-native"
 import Ionicons from '@expo/vector-icons/Ionicons';
 import MaterialCommunityIcons from '@expo/vector-icons/MaterialCommunityIcons';
 import GroupSelector from "@/components/GroupSelector";
@@ -71,6 +71,7 @@ const Board = () => {
                 <TouchableOpacity onPress={goBack} style={style.headBtn}>
                     <Ionicons name="arrow-back-outline" size={24} color="black" />
                 </TouchableOpacity>
+                <Text>{activeGroup?.name}</Text>
                 <TouchableOpacity style={style.headBtn} onPress={goToEditMode}>
                     <MaterialCommunityIcons name="pencil-outline" size={24} color="black" />
                 </TouchableOpacity>
@@ -79,18 +80,21 @@ const Board = () => {
                 <View style={[style.board, { backgroundColor: bacgroundColor }]}>
 
                 </View>
-                <View style={style.groups}>
-                    {groups.map(
-                        (group, index) => (
-                            <GroupSelector
-                                title={group.name}
-                                color={group.color}
-                                key={index}
-                                onPress={() => setActiveGroupId(group.id)}
-                                active={group.id === activeGroupId}
-                            />
-                        )
-                    )}
+                <View>
+                    <ScrollView horizontal style={style.groups}>
+                        {groups.map(
+                            (group, index) => (
+                                <GroupSelector
+                                    title={group.name}
+                                    color={group.color}
+                                    key={index}
+                                    onPress={() => setActiveGroupId(group.id)}
+                                    active={group.id === activeGroupId}
+                                />
+                            )
+                        )}
+                    </ScrollView>
+                    
                 </View>
                 <View style={style.readLine}>
 

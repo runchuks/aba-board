@@ -1,30 +1,40 @@
 import STYLES from "@/constants/styles";
-import { Group } from "@/types";
-import { FC, useEffect, useRef, useState } from "react";
-import { Button, Keyboard, Modal, StyleSheet, Text, TextInput, TouchableOpacity, View } from "react-native";
+import { Group, Item } from "@/types";
+import { FC, useEffect, useMemo, useRef, useState } from "react";
+import { Alert, Button, Keyboard, Modal, StyleSheet, Text, TextInput, TouchableOpacity, View } from "react-native";
 import MaterialIcons from '@expo/vector-icons/MaterialIcons';
 import AntDesign from '@expo/vector-icons/AntDesign';
 import STORAGE from "@/storage";
 import ColorPicker, { Panel1, Swatches, Preview, OpacitySlider, HueSlider } from 'reanimated-color-picker';
 import useTranslation from "@/localization";
 import Ionicons from '@expo/vector-icons/Ionicons';
+import Feather from '@expo/vector-icons/Feather';
+import { useSelector } from "react-redux";
+import speak from "@/speak";
+import ListEdit from "./ListEdit";
 
 interface Props {
     name: string
     id: number
     editMode: boolean
     color: string
+    lists: Array<Item[]>
     onEdit: (id: number | null) => void
+    onRefresh: () => void
 }
 
 const GroupEdit: FC<Props> = ({
     onEdit,
+    onRefresh,
     editMode,
+    lists,
     id,
     color,
     name,
 }) => {
     const t = useTranslation()
+
+    const { lang } = useSelector(state => state.global)
 
     const [groupName, setGroupName] = useState<string>(name)
     const [groupColor, setGroupColor] = useState<string>(color)
@@ -35,6 +45,7 @@ const GroupEdit: FC<Props> = ({
     const enableEditMode = () => {
         console.log(`Enable edit mode: ${id}`)
         onEdit(id)
+
     }
 
     const save = () => {
@@ -52,14 +63,33 @@ const GroupEdit: FC<Props> = ({
 
     const closeColorPickerModal = () => {
         setShowModal(false);
-        save();
+    }
+
+    const deleteGroup = () => {
+        Alert.alert(t('Delete group?'), '',[
+            {
+                text: t('Cancel'),
+                onPress: () => {},
+            },
+            {
+                text: t('Delete'),
+                onPress: async () => {
+                    STORAGE.deleteGroupById(id).then(() => {
+                        onEdit(null)
+                        onRefresh()
+                    })
+                },
+                style: "destructive"
+            },
+        ])
+        
     }
 
     useEffect(() => {
         if (editMode) {
             setTimeout(() => {
                 if (nameEditRef.current) {
-                    nameEditRef.current.focus()
+                    // nameEditRef.current.focus()
                 }
             }, 500)
         } else {
@@ -70,49 +100,74 @@ const GroupEdit: FC<Props> = ({
         
     }, [editMode])
 
+    const renderEditLists = useMemo<React.ReactNode[]>(() => {
+        if (lists) {
+            return lists.map((list, i) => <ListEdit list={list} key={i} />)
+        }
+        return []
+    }, [lists])
+
     return (
-        <View style={[style.groupWrap, !editMode && { backgroundColor: groupColor }]}>
-            <View style={{ flex: 1 }}>
+        <View style={{ marginBottom: 10 }}>
+            <View style={[style.groupWrap, !editMode && { backgroundColor: groupColor }]}>
+                <View style={{ flex: 1 }}>
+                    {editMode ? (
+                        <View style={style.textEditWrap}>
+                            <AntDesign name="edit" size={16} color="grey" />
+                            <TextInput
+                                value={groupName}
+                                onChangeText={setGroupName}
+                                ref={nameEditRef}
+                                style={style.groupInput}
+                            />
+                        </View>
+                    ) : <Text style={style.groupName}>{groupName}</Text>}
+                </View>
                 {editMode ? (
-                    <TextInput
-                        value={groupName}
-                        onChangeText={setGroupName}
-                        ref={nameEditRef}
-                        style={style.groupInput}
-                    />
-                ) : <Text style={style.groupName}>{groupName}</Text>}
+                    <TouchableOpacity onPress={() => setShowModal(true)}>
+                        <View style={[style.colorPicker, { backgroundColor: groupColor }]}>
+                            <Ionicons name="color-palette-outline" size={15} color="black" />
+                        </View>
+                    </TouchableOpacity>
+                ) : null}
+                <View>
+                    {editMode ? (
+                        <View style={style.editBtnWrap}>
+                            <TouchableOpacity onPress={deleteGroup} style={style.groupBtn}>
+                                <Feather name="trash-2" size={24} color="black" />
+                            </TouchableOpacity>
+                            <TouchableOpacity onPress={save} style={style.groupBtn}>
+                                <AntDesign name="check" size={24} color="black" />
+                            </TouchableOpacity>
+                        </View>
+                    ): (
+                        <TouchableOpacity onPress={enableEditMode} style={[style.groupBtn, style.editPencil]}>
+                            <MaterialIcons name="drive-file-rename-outline" size={24} color="black" />
+                        </TouchableOpacity>
+                    )}
+                </View>
+                <Modal visible={showModal} animationType='slide' transparent>
+                    <View style={style.centeredView}>
+                        <View style={style.colorPickerWrap}>
+                            <ColorPicker style={{ width: '100%' }} value={color} onComplete={onSelectColor}>
+                                <Preview/>
+                                <Panel1 style={{ marginVertical: 10}} />
+                                <HueSlider style={{ marginVertical: 10}} />
+                                <Swatches style={{ marginVertical: 10}} />
+                            </ColorPicker>
+                            <Button title={t('Ok')} onPress={closeColorPickerModal} />
+                        </View>
+                    </View>
+                </Modal>
             </View>
             {editMode ? (
-                <TouchableOpacity onPress={() => setShowModal(true)}>
-                    <View style={[style.colorPicker, { backgroundColor: groupColor }]}>
-                        <Ionicons name="color-palette-outline" size={15} color="black" />
-                    </View>
-                </TouchableOpacity>
-            ) : null}
-            <View>
-                {editMode ? (
-                    <TouchableOpacity onPress={save} style={style.groupBtn}>
-                        <AntDesign name="check" size={24} color="black" />
+                <View style={style.listsWrap}>
+                    {renderEditLists}
+                    <TouchableOpacity style={style.addColumn}>
+                        <AntDesign name="plus" size={24} color="grey" />
                     </TouchableOpacity>
-                ): (
-                    <TouchableOpacity onPress={enableEditMode} style={style.groupBtn}>
-                        <MaterialIcons name="drive-file-rename-outline" size={24} color="black" />
-                    </TouchableOpacity>
-                )}
-            </View>
-            <Modal visible={showModal} animationType='slide' transparent>
-                <View style={style.centeredView}>
-                    <View style={style.colorPickerWrap}>
-                        <ColorPicker style={{ width: '100%' }} value={color} onComplete={onSelectColor}>
-                            <Preview/>
-                            <Panel1 style={{ marginVertical: 10}} />
-                            <HueSlider style={{ marginVertical: 10}} />
-                            <Swatches style={{ marginVertical: 10}} />
-                        </ColorPicker>
-                        <Button title={t('Ok')} onPress={closeColorPickerModal} />
-                    </View>
                 </View>
-            </Modal>
+            ) : <Text>TO-DO listes</Text>}
         </View>
     )
 }
@@ -135,8 +190,8 @@ const style = StyleSheet.create({
         paddingVertical: 15
     },
     groupInput: {
-        paddingHorizontal: 15,
         paddingVertical: 15,
+        flex: 1
     },
     colorPicker: {
         width: 30,
@@ -145,7 +200,9 @@ const style = StyleSheet.create({
         padding: 2,
         justifyContent: "center",
         alignItems: "center",
-        borderRadius: 5
+        borderRadius: 5,
+        borderWidth: 1,
+        borderColor: "rgba(200,200,200,.6)"
     },
     colorPickerWrap: {
         borderWidth: 1,
@@ -161,6 +218,33 @@ const style = StyleSheet.create({
         justifyContent: 'center',
         alignItems: 'center',
     },
+    editBtnWrap: {
+        flexDirection: "row",
+        gap: 3
+    },
+    textEditWrap: {
+        flexDirection: "row",
+        alignItems: "center",
+        gap: 10,
+        marginHorizontal: 20
+    },
+    editPencil: {
+        backgroundColor: "rgba(150,150,150,.4)",
+        borderRadius: 5
+    },
+    addColumn: {
+        borderWidth: 2,
+        borderColor: 'grey',
+        alignItems: "center",
+        justifyContent: "center",
+        paddingVertical: 5,
+        width: 50
+    },
+    listsWrap: {
+        flexDirection: "row",
+        minHeight: 400,
+        gap: 5
+    }
 })
 
 export default GroupEdit

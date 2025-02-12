@@ -1,4 +1,4 @@
-import { AddUser, Board, Group, User } from "@/types";
+import { AddUser, Board, Group, RawGroup, User } from "@/types";
 import * as SQLite from "expo-sqlite";
 
 let database: SQLite.SQLiteDatabase | null = null; // Store the database instance
@@ -54,6 +54,16 @@ const initDb = async () => {
         FOREIGN KEY(boardId) REFERENCES board(id) ON DELETE CASCADE,
         FOREIGN KEY(groupId) REFERENCES groups(id) ON DELETE CASCADE,
         PRIMARY KEY (boardId, groupId)
+      );`
+    );
+
+    await db.execAsync(
+      `CREATE TABLE IF NOT EXISTS items (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        name TEXT,
+        image TEXT,
+        color TEXT,
+        lang TEXT
       );`
     );
 
@@ -184,7 +194,7 @@ const createStarterBoard = async (userId: number) => {
     // Step 3: Insert new group
     const { lastInsertRowId: lastGroupInserted } = await db.runAsync(
       `INSERT INTO groups (name, color, lists) VALUES (?, ?, ?);`,
-      ['Actions', '#63a845', JSON.stringify([])]
+      ['Actions', '#63a845', JSON.stringify([[],[],[]])]
     );
     console.log("Group added successfully!", lastGroupInserted);
 
@@ -264,7 +274,7 @@ const getBoardById = async (boardId: number): Promise<Board | null> => {
       // const board = boardResult[0]; // Assuming there's only one board for the userId
 
       // Query to fetch the associated groups for the board
-      const groupResult: Group[] = await db.getAllAsync(`
+      const groupResult: RawGroup[] = await db.getAllAsync(`
         SELECT \`group\`.*
         FROM groups AS \`group\`
         JOIN board_groups ON \`group\`.id = board_groups.groupId
@@ -274,7 +284,10 @@ const getBoardById = async (boardId: number): Promise<Board | null> => {
       // Format the result with the board and its groups
       return {
         ...board,
-        groups: groupResult, // Attach the array of groups
+        groups: groupResult.map(group => ({
+          ...group,
+          lists: JSON.parse(group.lists)
+        })), // Attach the array of groups
       };
     }
 
@@ -320,6 +333,41 @@ const updateGroupById = async (groupId: number, updates: { name?: string; color?
   }
 };
 
+const addGroup = async (boardId: number, name = 'New group') => {
+  const db = await getDatabase();
+  try {
+
+    const { lastInsertRowId } = await db.runAsync(
+      `INSERT INTO groups (name, color, lists) VALUES (?, ?, ?);`,
+      [name, '#ffffff', JSON.stringify([[],[],[]])]
+    );
+    console.log("Group added successfully!", lastInsertRowId);
+
+    // Step 4: Link board and group in the board_groups table
+    await db.runAsync(
+      `INSERT INTO board_groups (boardId, groupId) VALUES (?, ?);`,
+      [boardId, lastInsertRowId]
+    );
+
+    console.log('Board & Group linked successfully!');
+  } catch (error) {
+    console.error("Error during board and group creation:", error);
+  }
+}
+
+const deleteGroupById = async (groupId: number) => {
+  try {
+      const db = await getDatabase();
+      await db.runAsync("DELETE FROM groups WHERE id = ?;", [groupId]);
+
+      console.log(`Group with ID ${groupId} deleted successfully!`);
+      return true;
+  } catch (error) {
+      console.error("Error deleting group:", error);
+      return false;
+  }
+};
+
 
 const enableForeignKeys = async () => {
   const db = await getDatabase();
@@ -350,6 +398,8 @@ const STORAGE = {
   getBoard,
   getBoardById,
   updateGroupById,
+  addGroup,
+  deleteGroupById
 };
 
 export default STORAGE;

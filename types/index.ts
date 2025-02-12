@@ -32,6 +32,8 @@ export interface Item {
     id: number
     name: string
     image: string
+    color: string
+    lang: LANG
 }
 
 export interface Group {
@@ -39,6 +41,13 @@ export interface Group {
     name: string
     color: string
     lists: Array<Item[]>
+}
+
+export interface RawGroup {
+    id: number
+    name: string
+    color: string
+    lists: string
 }
 
 export interface Board {
