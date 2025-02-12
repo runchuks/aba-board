@@ -29,6 +29,7 @@ const Board = () => {
     }, [activeGroup]);
 
     const refreshBoard = async () => {
+        setActiveGroupId(null)
         STORAGE.getBoard(Number(userId)).then((board) => {
             if (board) {
                 serBoardId(board.id)
@@ -47,6 +48,14 @@ const Board = () => {
     useEffect(() => {
         navigation.setOptions({ header: () => null });
     }, [userId])
+
+    useEffect(() => {
+        const unsubscribe = navigation.addListener('focus', () => {
+            refreshBoard()
+        });
+    
+        return unsubscribe;
+    }, [navigation]);
 
     const goBack = () => {
         router.back();

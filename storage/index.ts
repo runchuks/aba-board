@@ -249,6 +249,77 @@ const getBoard = async (userId: number): Promise<Board | null> => {
   }
 };
 
+const getBoardById = async (boardId: number): Promise<Board | null> => {
+  try {
+    const db = await getDatabase();
+
+    // Query to fetch the board info for the given userId
+    const board: Board | null = await db.getFirstAsync(`
+      SELECT * 
+      FROM board 
+      WHERE id = ?;
+    `, [boardId]);
+
+    if (board) {
+      // const board = boardResult[0]; // Assuming there's only one board for the userId
+
+      // Query to fetch the associated groups for the board
+      const groupResult: Group[] = await db.getAllAsync(`
+        SELECT \`group\`.*
+        FROM groups AS \`group\`
+        JOIN board_groups ON \`group\`.id = board_groups.groupId
+        WHERE board_groups.boardId = ?;
+      `, [board.id]);
+
+      // Format the result with the board and its groups
+      return {
+        ...board,
+        groups: groupResult, // Attach the array of groups
+      };
+    }
+
+    return null;
+  } catch (error) {
+    console.error("Error fetching board by userId:", error);
+    return null;
+  }
+};
+
+const updateGroupById = async (groupId: number, updates: { name?: string; color?: string; }) => {
+  try {
+      const db = await getDatabase();
+  
+      // Build dynamic SQL query
+      const fields = [];
+      const values = [];
+  
+      if (updates.name !== undefined) {
+          fields.push("name = ?");
+          values.push(updates.name);
+      }
+      if (updates.color !== undefined) {
+          fields.push("color = ?");
+          values.push(updates.color);
+      }
+  
+      if (fields.length === 0) {
+          console.warn("No updates provided.");
+          return false;
+      }
+  
+      values.push(groupId); // Add userId as the last parameter
+      const query = `UPDATE \`groups\` SET ${fields.join(", ")} WHERE id = ?;`;
+  
+      await db.runAsync(query, values);
+  
+      console.log("Group updated successfully!");
+      return true;
+  } catch (error) {
+      console.error("Error updating group:", error);
+      return false;
+  }
+};
+
 
 const enableForeignKeys = async () => {
   const db = await getDatabase();
@@ -277,6 +348,8 @@ const STORAGE = {
   migration,
   enableForeignKeys,
   getBoard,
+  getBoardById,
+  updateGroupById,
 };
 
 export default STORAGE;
