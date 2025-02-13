@@ -18,7 +18,7 @@ interface Props {
     id: number
     editMode: boolean
     color: string
-    lists: Array<Item[]>
+    lists: Array<number[]>
     onEdit: (id: number | null) => void
     onRefresh: () => void
 }
@@ -43,9 +43,8 @@ const GroupEdit: FC<Props> = ({
     const nameEditRef = useRef<TextInput>(null)
 
     const enableEditMode = () => {
-        console.log(`Enable edit mode: ${id}`)
         onEdit(id)
-
+        console.log({lists})
     }
 
     const save = () => {
@@ -63,6 +62,15 @@ const GroupEdit: FC<Props> = ({
 
     const closeColorPickerModal = () => {
         setShowModal(false);
+    }
+
+    const onAdd = (listId: number, index: number) => {
+        const newLists = [...lists]
+        newLists[index].push(listId)
+
+        STORAGE.updateGroupById(id, {
+            lists: JSON.stringify(newLists)
+        })
     }
 
     const deleteGroup = () => {
@@ -102,7 +110,7 @@ const GroupEdit: FC<Props> = ({
 
     const renderEditLists = useMemo<React.ReactNode[]>(() => {
         if (lists) {
-            return lists.map((list, i) => <ListEdit list={list} key={i} />)
+            return lists.map((list, i) => <ListEdit list={list} groupId={id} index={i} key={i} onAdd={onAdd} />)
         }
         return []
     }, [lists])
@@ -208,10 +216,10 @@ const style = StyleSheet.create({
         borderWidth: 1,
         width: 500,
         justifyContent: "center",
-        alignItems: "center",
+        alignItems: "stretch",
         borderRadius: 20,
         backgroundColor: '#fff',
-        padding: 20
+        padding: 20,
     },
     centeredView: {
         flex: 1,

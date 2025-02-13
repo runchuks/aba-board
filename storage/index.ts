@@ -298,7 +298,7 @@ const getBoardById = async (boardId: number): Promise<Board | null> => {
   }
 };
 
-const updateGroupById = async (groupId: number, updates: { name?: string; color?: string; }) => {
+const updateGroupById = async (groupId: number, updates: { name?: string; color?: string; lists?: string}) => {
   try {
       const db = await getDatabase();
   
@@ -314,6 +314,10 @@ const updateGroupById = async (groupId: number, updates: { name?: string; color?
           fields.push("color = ?");
           values.push(updates.color);
       }
+      if (updates.lists !== undefined) {
+        fields.push("lists = ?");
+        values.push(updates.lists);
+      }
   
       if (fields.length === 0) {
           console.warn("No updates provided.");
@@ -325,7 +329,7 @@ const updateGroupById = async (groupId: number, updates: { name?: string; color?
   
       await db.runAsync(query, values);
   
-      console.log("Group updated successfully!");
+      console.log("Group updated successfully!", groupId);
       return true;
   } catch (error) {
       console.error("Error updating group:", error);
@@ -368,6 +372,21 @@ const deleteGroupById = async (groupId: number) => {
   }
 };
 
+const addItem = async (name: string, lang: string, color = '', image = '') => {
+  try {
+    const db = await getDatabase();
+
+    const { lastInsertRowId } = await db.runAsync(
+      `INSERT INTO items (name, image, color, lang) VALUES (?, ?, ?, ?);`,
+      [name, image, color, lang]
+    );
+
+    return lastInsertRowId;
+  } catch (error) {
+    console.error("Error inserting item:", error);
+  }
+};
+
 
 const enableForeignKeys = async () => {
   const db = await getDatabase();
@@ -380,7 +399,7 @@ const enableForeignKeys = async () => {
 };
 
 const migration = async () => {
-  
+
 };
   
   
@@ -399,7 +418,8 @@ const STORAGE = {
   getBoardById,
   updateGroupById,
   addGroup,
-  deleteGroupById
+  deleteGroupById,
+  addItem,
 };
 
 export default STORAGE;

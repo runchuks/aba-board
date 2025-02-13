@@ -40,7 +40,7 @@ export interface Group {
     id: number
     name: string
     color: string
-    lists: Array<Item[]>
+    lists: Array<number[]>
 }
 
 export interface RawGroup {

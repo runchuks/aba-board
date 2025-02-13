@@ -1,20 +1,54 @@
 import { Item } from "@/types"
-import { FC, useState } from "react"
-import { Modal, StyleSheet, Text, TouchableOpacity, View } from "react-native"
+import { FC, useMemo, useState } from "react"
+import { Button, Modal, StyleSheet, Text, TouchableOpacity, View, TextInput } from "react-native"
 import AntDesign from '@expo/vector-icons/AntDesign';
+import STYLES from "@/constants/styles";
+import useTranslation from "@/localization";
+import speak from "@/speak";
+import { useSelector } from "react-redux";
+import STORAGE from "@/storage";
 
 interface Props {
-    list: Item[]
+    list: number[]
+    index: number
+    groupId: number
+    onAdd: (id: number, index: number) => void
 }
 
-const ListEdit: FC<Props> = ({ list }) => {
+const ListEdit: FC<Props> = ({ list, index, groupId, onAdd }) => {
+    const { lang } = useSelector(state => state.global)
+    const t = useTranslation()
     const [showModal, setShowModal] = useState<boolean>(false)
+
+    const [newItemName, setNewItemName] = useState<string>('')
 
     const addItem = () => {
         setShowModal(true)
     }
+
+    const saveItem = () => {
+        STORAGE.addItem(newItemName, lang).then(itemId => {
+            if (itemId) {
+                console.log({ itemId })
+                onAdd(itemId, index)
+            }
+        })
+    }
+
+    const speakOut = () => {
+        speak(newItemName, lang)
+    }
+
+    const renderItems = useMemo<React.ReactNode[]>(() => {
+        if (list) {
+            return list.map(itemId => <Text>{itemId}</Text>)
+        }
+        return []
+    }, [list])
+
     return (
         <View style={style.wrap}>
+            {renderItems}
             <TouchableOpacity style={style.addItem} onPress={addItem}>
                 <AntDesign name="plus" size={24} color="grey" />
             </TouchableOpacity>
@@ -29,7 +63,23 @@ const ListEdit: FC<Props> = ({ list }) => {
             >
                 <View style={style.centeredView}>
                     <View style={style.innerModalWrap}>
-                        
+                        <View style={style.nameInputWrap}>
+                            <View style={[STYLES.inputWrap, { flex: 1 }]}>
+                                <Text style={STYLES.inputLabel}>{t('Item name')}</Text>
+                                <TextInput
+                                    value={newItemName}
+                                    onChangeText={setNewItemName}
+                                    style={STYLES.input}
+                                />
+                            </View>
+                            <View style={{ justifyContent: "flex-end", paddingBottom: 5, marginLeft: 10 }}>
+                                <TouchableOpacity onPress={speakOut} disabled={!newItemName}>
+                                    <AntDesign name="sound" size={24} color={!newItemName ? 'grey' : 'black'} />
+                                </TouchableOpacity>
+                            </View>
+                        </View>
+                        <Button title={t('Save')} onPress={saveItem}/>
+                        <Button title={t('Close')} color={'red'} onPress={() => setShowModal(false)} />
                     </View>
                 </View>
             </Modal>
@@ -54,16 +104,20 @@ const style = StyleSheet.create({
         borderWidth: 1,
         width: 500,
         justifyContent: "center",
-        alignItems: "center",
+        alignItems: "stretch",
         borderRadius: 20,
         backgroundColor: '#fff',
-        padding: 20
+        padding: 20,
+        gap: 5
     },
     centeredView: {
         flex: 1,
         justifyContent: 'center',
         alignItems: 'center',
     },
+    nameInputWrap: {
+        flexDirection: "row"
+    }
 })
 
 export default ListEdit
