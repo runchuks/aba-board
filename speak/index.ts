@@ -4,9 +4,13 @@ import { GlobalState } from "@/types";
 import { DEFAULT_LANG } from "@/constants/global";
 
 const speak = (text: string, lang = DEFAULT_LANG) => {
+    console.log(`Trying to say: ${text} Lang: ${lang}`)
     Speech.isSpeakingAsync().then((speaking) => {
-        if (!speaking) {
-            console.log(`Trying to say: ${text} Lang: ${lang}`)
+        if (speaking) {
+            Speech.stop().then(() => {
+                Speech.speak(text, { language: lang }); 
+            })
+        } else {
             Speech.speak(text, { language: lang });
         }
     })

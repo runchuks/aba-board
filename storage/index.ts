@@ -1,4 +1,4 @@
-import { AddUser, Board, Group, RawGroup, User } from "@/types";
+import { AddUser, Board, Group, Item, RawGroup, User } from "@/types";
 import * as SQLite from "expo-sqlite";
 
 let database: SQLite.SQLiteDatabase | null = null; // Store the database instance
@@ -238,17 +238,22 @@ const getBoard = async (userId: number): Promise<Board | null> => {
       const board = boardResult[0]; // Assuming there's only one board for the userId
 
       // Query to fetch the associated groups for the board
-      const groupResult: Group[] = await db.getAllAsync(`
+      const groupResult: RawGroup[] = await db.getAllAsync(`
         SELECT \`group\`.*
         FROM groups AS \`group\`
         JOIN board_groups ON \`group\`.id = board_groups.groupId
         WHERE board_groups.boardId = ?;
       `, [board.id]);
 
+      const newGroups: Group[] = groupResult.map(group => ({
+        ...group,
+        lists: JSON.parse(group.lists),
+      })) 
+
       // Format the result with the board and its groups
       return {
         ...board,
-        groups: groupResult, // Attach the array of groups
+        groups: newGroups, // Attach the array of groups
       };
     }
 
@@ -387,6 +392,83 @@ const addItem = async (name: string, lang: string, color = '', image = '') => {
   }
 };
 
+const getItem = async (id: number) => {
+  try {
+    const db = await getDatabase();
+    const result = await db.getFirstAsync("SELECT * FROM items WHERE id = ?;", [id]);
+
+    return result as Item | null;
+  } catch (error) {
+      console.error("Error fetching item by ID:", error);
+      return null;
+  }
+}
+
+const getGroup = async (id: number) => {
+  try {
+    const db = await getDatabase();
+    const result: RawGroup | null = await db.getFirstAsync("SELECT * FROM groups WHERE id = ?;", [id]);
+
+    if (!result) return null
+
+    return {
+      ...result,
+      lists: JSON.parse(result.lists)
+    } as Group
+    
+  } catch (error) {
+      console.error("Error fetching group by ID:", error);
+      return null;
+  }
+}
+
+const getItemsByIds = async (itemIds: number[]) => {
+  try {
+    if (itemIds.length === 0) {
+      return [];
+    }
+
+    const db = await getDatabase();
+
+    // Create placeholders for the SQL query based on the number of IDs
+    const placeholders = itemIds.map(() => '?').join(', ');
+
+    const result = await db.getAllAsync(
+      `SELECT * FROM items WHERE id IN (${placeholders});`,
+      itemIds
+    );
+
+    return result as Item[];
+  } catch (error) {
+    console.error("Error fetching items by IDs:", error);
+    return [];
+  }
+};
+
+const getAllItemsAsRecord = async (): Promise<Record<number, Item>> => {
+  try {
+    const db = await getDatabase();
+
+    const result: Item[] = await db.getAllAsync(`SELECT * FROM items;`);
+
+    const record: Record<number, Item> = {};
+
+    result.forEach((item) => {
+      record[item.id] = {
+        id: item.id,
+        name: item.name,
+        image: item.image,
+        lang: item.lang,
+        color: item.color,
+      };
+    });
+
+    return record;
+  } catch (error) {
+    console.error("Error fetching all groups as record:", error);
+    return {};
+  }
+};
 
 const enableForeignKeys = async () => {
   const db = await getDatabase();
@@ -420,6 +502,10 @@ const STORAGE = {
   addGroup,
   deleteGroupById,
   addItem,
+  getItem,
+  getGroup,
+  getItemsByIds,
+  getAllItemsAsRecord,
 };
 
 export default STORAGE;

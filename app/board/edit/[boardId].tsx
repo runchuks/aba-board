@@ -7,6 +7,7 @@ import { useLocalSearchParams, useNavigation, useRouter } from "expo-router";
 import { useEffect, useMemo, useState } from "react";
 import { ScrollView, Text, View, StyleSheet, TouchableOpacity, RefreshControl } from "react-native"
 import AntDesign from '@expo/vector-icons/AntDesign';
+import Entypo from '@expo/vector-icons/Entypo';
 
 const EditBoard = () => {
     const { unlocked, LockScreen } = useLock();
@@ -31,6 +32,10 @@ const EditBoard = () => {
         })
     }
 
+    const editGroup = (id: number) => {
+        router.navigate(`/board/edit/edit-group/${id}`)
+    }
+
     useEffect(() => {
         navigation.setOptions({ title: t('Edit board') });
         refreshBoard()
@@ -40,19 +45,26 @@ const EditBoard = () => {
         console.log({ editingGroup })
     }, [editingGroup])
 
+
+    useEffect(() => {
+        const unsubscribe = navigation.addListener('focus', () => {
+            refreshBoard()
+        });
+
+        return unsubscribe;
+    }, [navigation]);
+
     const renderGroups = useMemo<React.ReactNode[]>(() => {
         if (board && board.groups) {
             return board.groups.map(group => (
-                <GroupEdit
-                    name={group.name}
-                    id={group.id}
-                    color={group.color}
-                    onEdit={setEditingGroup}
-                    editMode={group.id === editingGroup}
+                <TouchableOpacity
+                    onPress={() => editGroup(group.id)}
+                    style={[style.groupWrap, { backgroundColor: group.color}]}
                     key={group.id}
-                    onRefresh={refreshBoard}
-                    lists={group.lists}
-                />
+                >
+                    <Text numberOfLines={1}>{group.name}</Text>
+                    <Entypo name="chevron-thin-right" size={24} color="black" />
+                </TouchableOpacity>
             ))
         }
         return []
@@ -93,7 +105,7 @@ const style = StyleSheet.create({
         width: '100%',
     },
     innerWrap: {
-        width: '100%',
+        width: 400,
         marginBottom: 50,
         padding: 15
     },
@@ -102,7 +114,17 @@ const style = StyleSheet.create({
         borderColor: 'grey',
         alignItems: "center",
         paddingVertical: 5
-    }
+    },
+    groupWrap: {
+        borderWidth: 1,
+        borderRadius: 5,
+        flexDirection: "row",
+        justifyContent: "space-between",
+        alignItems: "center",
+        padding: 10,
+        marginBottom: 10,
+        height: 50
+    },
 })
 
 export default EditBoard

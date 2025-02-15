@@ -10,6 +10,7 @@ export interface GlobalState {
     loading: boolean
     lang: LANG
     masterPin: string
+    items: Record<number, Item>
 }
 
 export interface User {
@@ -41,6 +42,14 @@ export interface Group {
     name: string
     color: string
     lists: Array<number[]>
+}
+
+export interface FinalGroup {
+    id: number
+    name: string
+    color: string
+    lists: Array<Item[]>
+    listsMap: Array<number[]>
 }
 
 export interface RawGroup {

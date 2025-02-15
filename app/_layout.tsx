@@ -6,6 +6,7 @@ import { store } from "@/store";
 import { Stack } from "expo-router";
 import { StatusBar } from "expo-status-bar";
 import { useEffect } from "react";
+import { GestureHandlerRootView } from "react-native-gesture-handler";
 import { Provider } from "react-redux";
 
 export default function RootLayout() {
@@ -19,11 +20,13 @@ export default function RootLayout() {
   }, [])
 
   return (
-    <Provider store={store}>
-      <StatusBar
-        hidden
-      />
-      <Stack />
-    </Provider>
+    <GestureHandlerRootView>
+      <Provider store={store}>
+        <StatusBar
+          hidden
+        />
+        <Stack />
+      </Provider>
+    </GestureHandlerRootView>
   );
 }
