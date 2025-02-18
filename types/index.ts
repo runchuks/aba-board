@@ -41,15 +41,15 @@ export interface Group {
     id: number
     name: string
     color: string
-    lists: Array<number[]>
+    lists: number[][]
 }
 
 export interface FinalGroup {
     id: number
     name: string
     color: string
-    lists: Array<Item[]>
-    listsMap: Array<number[]>
+    lists: Item[][]
+    listsMap: number[][]
 }
 
 export interface RawGroup {

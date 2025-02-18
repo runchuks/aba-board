@@ -19,8 +19,8 @@ interface Props {
     name: string
     id: number
     color: string
-    lists: Array<Item[]>
-    listsMap: Array<number[]>
+    lists: Item[][]
+    listsMap: number[][]
     onRefresh: () => void
 }
 

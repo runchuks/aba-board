@@ -1,7 +1,7 @@
 import GroupEdit from "@/components/GroupEdit";
 import useTranslation from "@/localization";
 import STORAGE from "@/storage";
-import { FinalGroup, Group, Item } from "@/types";
+import { FinalGroup, Item } from "@/types";
 import { useLocalSearchParams, useNavigation } from "expo-router";
 import { useEffect, useState } from "react";
 import { StyleSheet, Text, View } from "react-native"
@@ -15,19 +15,19 @@ const EditGroup = () => {
 
     const getListItems = async (ids: number[][]): Promise<Item[][]> => {
         try {
-          const listsPromises = ids.map(async (itemIds) => {
-            if (itemIds) {
-              const lists = await STORAGE.getItemsByIds(itemIds);
-              return lists || [];
-            } 
-            return [];
-          });
-      
-          const listsFinal = await Promise.all(listsPromises);
-          return listsFinal;
+            const listsPromises = ids.map(async (itemIds) => {
+                if (itemIds) {
+                    const lists = await STORAGE.getItemsByIds(itemIds);
+                    return lists || [];
+                }
+                return [];
+            });
+
+            const listsFinal = await Promise.all(listsPromises);
+            return listsFinal;
         } catch (error) {
-          console.error('Error fetching items:', error);
-          throw error;
+            console.error('Error fetching items:', error);
+            throw error;
         }
     };
 
@@ -52,7 +52,7 @@ const EditGroup = () => {
         navigation.setOptions({ title: t('Edit group') });
         getGroup()
     }, [groupId, navigation])
-    
+
     if (!group) return null
 
     return (
