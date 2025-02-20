@@ -22,5 +22,10 @@
     "Back to settings": "Zurück zu den Einstellungen",
     "Delete user?": "Benutzer löschen?",
     "Cancel": "Abbrechen",
-    "Can`t add nameless user": "Benutzer ohne Namen kann nicht hinzugefügt werden"
+    "Can`t add nameless user": "Benutzer ohne Namen kann nicht hinzugefügt werden",
+    "Reset board": "Tafel zurücksetzen",
+    "Reset board?": "Tafel zurücksetzen?",
+    "Reset": "Zurücksetzen",
+    "Edit board": "Tafel bearbeiten",
+    "New group": "Neue Gruppe"
 }

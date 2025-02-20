@@ -1,10 +1,10 @@
-import LV from './languages/lv.json'
-import DE from './languages/de.json'
+import LV from './languages/lv-LV.json'
+import DE from './languages/de-DE.json'
 
 export enum LANG {
-    LV = 'lv',
-    EN = 'en',
-    DE = 'de',
+    LV = 'lv-LV',
+    EN = 'en-US',
+    DE = 'de-DE',
 }
 
 export const LANGS = {

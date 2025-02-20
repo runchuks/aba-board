@@ -4,7 +4,7 @@ import { LayoutRectangle, ScrollView, StyleSheet, Text, TouchableOpacity, View }
 import Ionicons from '@expo/vector-icons/Ionicons';
 import MaterialCommunityIcons from '@expo/vector-icons/MaterialCommunityIcons';
 import GroupSelector from "@/components/GroupSelector";
-import {Dimensions} from 'react-native';
+import { Dimensions } from 'react-native';
 import STORAGE from "@/storage";
 import { Group } from "@/types";
 import CardColumn from "@/components/CardColumn";
@@ -81,7 +81,7 @@ const Board = () => {
         const unsubscribe = navigation.addListener('focus', () => {
             refreshBoard()
         });
-    
+
         return unsubscribe;
     }, [navigation]);
 
@@ -98,7 +98,7 @@ const Board = () => {
             setLayout({ x: pageX, y: pageY, width, height });
         });
     }, []);
-    
+
     const handleDrag = (id: number, x: number, y: number) => {
         if (layout) {
             if (x >= layout.x && x <= layout.x + layout.width && y >= layout.y && y <= layout.y + layout.height) {
@@ -111,11 +111,11 @@ const Board = () => {
 
     const onDrop = (id: number) => {
         console.log('dropped', id)
-        const sorted =  Object.entries(insideCards.current)
+        const sorted = Object.entries(insideCards.current)
             .filter(([, value]) => value !== null) // Exclude null values
             .sort(([, a], [, b]) => a - b)         // Sort by value
             .map(([key]) => Number(key));
-            setInsiteIds(sorted)
+        setInsiteIds(sorted)
     }
 
     const repeatSpeak = () => {
@@ -144,24 +144,25 @@ const Board = () => {
             speak(currentText, lang)
         }
     }, [currentText, lang])
-    
+
     const renderGroupItems = useMemo<React.ReactNode[]>(() => {
         // const sg = groups.find(g => g.id === activeGroupId)
         return groups.map(g => {
-            const colons = g.lists.map(ids => (
+            const colons = g.lists.map((ids, index) => (
                 <CardColumn
                     ids={ids}
                     onDrag={handleDrag}
                     onDrop={onDrop}
                     display={activeGroupId === g.id}
                     activeCards={insideIds}
+                    key={index}
                 />
                 // <Text>{JSON.stringify(ids)}</Text>
             ))
             return (
-                <View style={{ 
-                    position: "absolute", 
-                    height: windowHeight - 150 - 50, 
+                <View style={{
+                    position: "absolute",
+                    height: windowHeight - 150 - 50,
                     width: windowWidth,
                     flexDirection: "row",
                     borderWidth: 1,
@@ -178,10 +179,10 @@ const Board = () => {
         //         // <Text>{JSON.stringify(ids)}</Text>
         //     ))
         // }
-        
+
         return []
     }, [userId, activeGroupId, insideIds.length]);
-    
+
     return (
         <View>
             <View style={[style.head, { backgroundColor: bacgroundColor }]}>
@@ -211,7 +212,7 @@ const Board = () => {
                             )
                         )}
                     </ScrollView>
-                    
+
                 </View>
                 <View style={style.readLine} ref={dropZoneRef}>
                     <View style={style.readLineControls}>

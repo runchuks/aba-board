@@ -8,7 +8,8 @@ const initialState = {
     loading: false,
     lang: SecureStore.getItem('lang') || DEFAULT_LANG,
     masterPin: SecureStore.getItem('masterPin') || DEFAULT_PIN,
-    items: {}
+    items: {},
+    speechLang: SecureStore.getItem('speechLang') || DEFAULT_LANG,
 } as GlobalState
 
 const globalSlice = createSlice({
@@ -21,9 +22,13 @@ const globalSlice = createSlice({
     },
     setItems: (state, action: PayloadAction<Record<number, Item>>) => {
       state.items = action.payload
+    },
+    setSpeechLang: (state, action: PayloadAction<string>) => {
+        SecureStore.setItem('speechLang', action.payload)
+        state.speechLang = action.payload;
     }
   },
 });
 
-export const { setLang, setItems } = globalSlice.actions;
+export const { setLang, setItems, setSpeechLang } = globalSlice.actions;
 export default globalSlice.reducer;

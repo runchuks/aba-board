@@ -4,7 +4,7 @@ import STORAGE from "@/storage";
 import { FinalGroup, Item } from "@/types";
 import { useLocalSearchParams, useNavigation } from "expo-router";
 import { useEffect, useState } from "react";
-import { StyleSheet, Text, View } from "react-native"
+import { StyleSheet, View } from "react-native"
 
 const EditGroup = () => {
     const { groupId } = useLocalSearchParams();
@@ -43,9 +43,13 @@ const EditGroup = () => {
                     } as FinalGroup
 
                     setGroup(returnValues)
-                })
+                }).catch(error => {
+                    console.error('Error fetching list items:', error);
+                });
             }
-        })
+        }).catch(error => {
+            console.error('Error fetching group:', error);
+        });
     }
 
     useEffect(() => {

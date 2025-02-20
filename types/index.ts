@@ -11,6 +11,7 @@ export interface GlobalState {
     lang: LANG
     masterPin: string
     items: Record<number, Item>
+    speechLang: string
 }
 
 export interface User {
