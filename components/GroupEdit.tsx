@@ -46,6 +46,8 @@ const GroupEdit: FC<Props> = ({
     const [newItemName, setNewItemName] = useState<string>('')
     const [listToAddItemIndex, setListToAddItemIndex] = useState<number | null>(null)
 
+    const [editItemId, setEditItemId] = useState<number | null>(null)
+
     const nameEditRef = useRef<TextInput>(null)
 
     const save = () => {
@@ -71,13 +73,13 @@ const GroupEdit: FC<Props> = ({
         setListToAddItemIndex(index)
     }
 
-    const onEdit = (id: number) => {
-        
+    const onEdit = (id: number, currentName: string) => {
+        setEditItemId(id)
+        setNewItemName(currentName)
     }
 
     const saveItem = () => {
         if (listToAddItemIndex !== null) {
-
             STORAGE.addItem(newItemName, lang).then(itemId => {
                 if (itemId) {
                     const newLists = [...listsMap]
@@ -86,15 +88,22 @@ const GroupEdit: FC<Props> = ({
                     STORAGE.updateGroupById(id, {
                         lists: JSON.stringify(newLists)
                     }).then(() => {
-                        
+
                         onRefresh()
                         setShowAddModal(false)
                         setListToAddItemIndex(null);
                     })
                 }
             })
+        } else if (editItemId !== null) {
+            STORAGE.updateItemById(editItemId, {
+                name: newItemName
+            }).then(() => {
+                onRefresh()
+                handleCloseAddModal()
+            })
         }
-        
+
     }
 
     const speakOut = () => {
@@ -112,11 +121,24 @@ const GroupEdit: FC<Props> = ({
         })
     }
 
+    const deleteItem = (data: number[], index: number, deletedId: number) => {
+        const newLists = [...listsMap]
+        newLists[index] = data;
+
+        STORAGE.updateGroupById(id, {
+            lists: JSON.stringify(newLists)
+        }).then(() => {
+            STORAGE.deleteItemById(deletedId).then(() => {
+                onRefresh()
+            })
+        })
+    }
+
     const deleteGroup = () => {
-        Alert.alert(t('Delete group?'), '',[
+        Alert.alert(t('Delete group?'), '', [
             {
                 text: t('Cancel'),
-                onPress: () => {},
+                onPress: () => { },
             },
             {
                 text: t('Delete'),
@@ -129,7 +151,7 @@ const GroupEdit: FC<Props> = ({
                 style: "destructive"
             },
         ])
-        
+
     }
 
     const renderEditLists = useMemo<React.ReactNode[]>(() => {
@@ -143,11 +165,19 @@ const GroupEdit: FC<Props> = ({
                     key={i}
                     onAdd={onAdd}
                     onOrderChange={onOrderChange}
+                    deleteItem={deleteItem}
+                    onEdit={onEdit}
                 />
             ))
         }
         return []
     }, [lists, listsMap])
+
+    const handleCloseAddModal = () => {
+        setShowAddModal(false)
+        setListToAddItemIndex(null)
+        setEditItemId(null)
+    }
 
     return (
         <View style={style.wrap}>
@@ -182,46 +212,46 @@ const GroupEdit: FC<Props> = ({
                     <View style={style.centeredView}>
                         <View style={style.colorPickerWrap}>
                             <ColorPicker style={{ width: '100%' }} value={color} onComplete={onSelectColor}>
-                                <Preview/>
-                                <Panel1 style={{ marginVertical: 10}} />
-                                <HueSlider style={{ marginVertical: 10}} />
-                                <Swatches style={{ marginVertical: 10}} />
+                                <Preview />
+                                <Panel1 style={{ marginVertical: 10 }} />
+                                <HueSlider style={{ marginVertical: 10 }} />
+                                <Swatches style={{ marginVertical: 10 }} />
                             </ColorPicker>
                             <Button title={t('Ok')} onPress={closeColorPickerModal} />
                         </View>
                     </View>
                 </Modal>
 
-            <Modal
-                visible={showAddModal}
-                animationType='slide'
-                transparent
-                onRequestClose={() => {
-                    setShowAddModal(false);
-                }}
-            >
-                <View style={style.centeredView}>
-                    <View style={style.innerModalWrap}>
-                        <View style={style.nameInputWrap}>
-                            <View style={[STYLES.inputWrap, { flex: 1 }]}>
-                                <Text style={STYLES.inputLabel}>{t('Item name')}</Text>
-                                <TextInput
-                                    value={newItemName}
-                                    onChangeText={setNewItemName}
-                                    style={STYLES.input}
-                                />
+                <Modal
+                    visible={showAddModal || editItemId !== null}
+                    animationType='slide'
+                    transparent
+                    onRequestClose={() => {
+                        setShowAddModal(false);
+                    }}
+                >
+                    <View style={style.centeredView}>
+                        <View style={style.innerModalWrap}>
+                            <View style={style.nameInputWrap}>
+                                <View style={[STYLES.inputWrap, { flex: 1 }]}>
+                                    <Text style={STYLES.inputLabel}>{t('Item name')}</Text>
+                                    <TextInput
+                                        value={newItemName}
+                                        onChangeText={setNewItemName}
+                                        style={STYLES.input}
+                                    />
+                                </View>
+                                <View style={{ justifyContent: "flex-end", paddingBottom: 5, marginLeft: 10 }}>
+                                    <TouchableOpacity onPress={speakOut} disabled={!newItemName}>
+                                        <AntDesign name="sound" size={24} color={!newItemName ? 'grey' : 'black'} />
+                                    </TouchableOpacity>
+                                </View>
                             </View>
-                            <View style={{ justifyContent: "flex-end", paddingBottom: 5, marginLeft: 10 }}>
-                                <TouchableOpacity onPress={speakOut} disabled={!newItemName}>
-                                    <AntDesign name="sound" size={24} color={!newItemName ? 'grey' : 'black'} />
-                                </TouchableOpacity>
-                            </View>
+                            <Button title={t('Save')} onPress={saveItem} />
+                            <Button title={t('Close')} color={'red'} onPress={handleCloseAddModal} />
                         </View>
-                        <Button title={t('Save')} onPress={saveItem}/>
-                        <Button title={t('Close')} color={'red'} onPress={() => setShowModal(false)} />
                     </View>
-                </View>
-            </Modal>
+                </Modal>
             </View>
             <View style={style.listsWrap}>
                 {renderEditLists}

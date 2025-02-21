@@ -35,6 +35,9 @@ const STYLES = StyleSheet.create({
         borderRadius: 5,
         paddingHorizontal: 20,
         height: 45
+    },
+    disabled: {
+        opacity: 0.5
     }
 })
 

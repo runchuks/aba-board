@@ -8,14 +8,24 @@ const speak = (text: string, lang = DEFAULT_LANG) => {
 
     const savedLang = SecureStore.getItem('speechLang') || lang
 
+    const onError = (error: Error) => {
+        console.log('An error occurred:', error.message)
+    }
+
     console.log(`Trying to say: ${text} Lang: ${savedLang}`)
     Speech.isSpeakingAsync().then((speaking) => {
         if (speaking) {
             Speech.stop().then(() => {
-                Speech.speak(text, { language: savedLang }); 
+                Speech.speak(text, {
+                    language: savedLang,
+                    onError
+                }); 
             })
         } else {
-            Speech.speak(text, { language: savedLang });
+            Speech.speak(text, {
+                language: savedLang,
+                onError
+            });
         }
     })
 }

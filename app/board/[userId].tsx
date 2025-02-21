@@ -12,6 +12,7 @@ import Feather from '@expo/vector-icons/Feather';
 import { useDispatch, useSelector } from "react-redux";
 import { setItems } from "@/store/slices/global";
 import speak from "@/speak";
+import MaterialIcons from '@expo/vector-icons/MaterialIcons';
 
 const windowHeight = Dimensions.get('window').height;
 const windowWidth = Dimensions.get('window').width;
@@ -26,6 +27,8 @@ const Board = () => {
     const [groups, setGroups] = useState<Group[]>([])
     const [activeGroupId, setActiveGroupId] = useState<number | null>(null)
     const [boardId, serBoardId] = useState<number | null>(null)
+
+    const [autoSpeak, setAutoSpeak] = useState<boolean>(true)
 
     const [currentText, setCurrentText] = useState<string>('');
 
@@ -140,12 +143,12 @@ const Board = () => {
     }, [insideIds])
 
     useEffect(() => {
-        if (currentText) {
+        if (currentText && autoSpeak) {
             speak(currentText, lang)
         }
-    }, [currentText, lang])
+    }, [autoSpeak, currentText, lang])
 
-    const renderGroupItems = useMemo<React.ReactNode[]>(() => {
+    const renderGroupItems = useMemo<React.ReactNode>(() => {
         // const sg = groups.find(g => g.id === activeGroupId)
         return groups.map(g => {
             const colons = g.lists.map((ids, index) => (
@@ -165,9 +168,7 @@ const Board = () => {
                     height: windowHeight - 150 - 50,
                     width: windowWidth,
                     flexDirection: "row",
-                    borderWidth: 1,
-                    borderColor: 'red'
-                }}>
+                }} key={g.id}>
                     {colons}
                 </View>
             )
@@ -216,6 +217,10 @@ const Board = () => {
                 </View>
                 <View style={style.readLine} ref={dropZoneRef}>
                     <View style={style.readLineControls}>
+                        <TouchableOpacity onPress={() => setAutoSpeak(!autoSpeak)} style={{ alignItems: "center" }}>
+                            <MaterialIcons name="auto-mode" size={24} color={autoSpeak ? 'blue' : 'black'} />
+                            <Text style={{ fontSize: 7 }}>Auto: {autoSpeak ? 'on' : 'off'}</Text>
+                        </TouchableOpacity>
                         <TouchableOpacity onPress={repeatSpeak}>
                             <Feather name="volume-2" size={30} color="black" />
                         </TouchableOpacity>
@@ -253,8 +258,6 @@ const style = StyleSheet.create({
     readLine: {
         height: 145,
         backgroundColor: "grey",
-        borderWidth: 1,
-        borderColor: 'blue',
         position: "relative"
     },
     readLineControls: {
@@ -262,10 +265,9 @@ const style = StyleSheet.create({
         top: 0,
         right: 0,
         width: 50,
-        borderWidth: 1,
         height: 145,
         alignItems: "center",
-        justifyContent: "center"
+        justifyContent: "space-around",
     }
 })
 

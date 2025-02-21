@@ -404,6 +404,50 @@ const getItem = async (id: number) => {
   }
 }
 
+const deleteItemById = async (itemId: number) => {
+  try {
+      const db = await getDatabase();
+      await db.runAsync("DELETE FROM items WHERE id = ?;", [itemId]);
+
+      console.log(`Item with ID ${itemId} deleted successfully!`);
+      return true;
+  } catch (error) {
+      console.error("Error deleting item:", error);
+      return false;
+  }
+};
+
+const updateItemById = async (itemId: number, updates: { name?: string; }) => {
+  try {
+      const db = await getDatabase();
+  
+      // Build dynamic SQL query
+      const fields = [];
+      const values = [];
+  
+      if (updates.name !== undefined) {
+          fields.push("name = ?");
+          values.push(updates.name);
+      }
+  
+      if (fields.length === 0) {
+          console.warn("No updates provided.");
+          return false;
+      }
+  
+      values.push(itemId); // Add userId as the last parameter
+      const query = `UPDATE items SET ${fields.join(", ")} WHERE id = ?;`;
+  
+      await db.runAsync(query, values);
+  
+      console.log("Item updated successfully!", itemId);
+      return true;
+  } catch (error) {
+      console.error("Error updating item:", error);
+      return false;
+  }
+};
+
 const getGroup = async (id: number) => {
   try {
     const db = await getDatabase();
@@ -506,6 +550,8 @@ const STORAGE = {
   getGroup,
   getItemsByIds,
   getAllItemsAsRecord,
+  deleteItemById,
+  updateItemById,
 };
 
 export default STORAGE;

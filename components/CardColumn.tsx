@@ -1,56 +1,73 @@
 import STORAGE from "@/storage"
 import { Item } from "@/types"
 import { FC, useEffect, useMemo, useState } from "react"
-import { StyleSheet, Text, View } from "react-native"
+import { StyleSheet, View } from "react-native"
 import Card from "./Card"
 
 interface Props {
     ids: number[]
-    onDrag: (id: number, x: number, y: number) => void;
+    onDrag: (id: number, x: number) => void;
     onDrop: (id: number) => void
     display: boolean
     activeCards: number[]
 }
 
+const cardSize = 100
+
 const CardColumn: FC<Props> = ({ ids, onDrag, onDrop, display, activeCards }) => {
     const [items, setItems] = useState<Item[]>([])
+    const [dimensions, setDimensions] = useState({ width: 0, height: 0 })
 
     const getItems = () => {
         STORAGE.getItemsByIds(ids).then(values => {
             if (values) {
                 const idMap = new Map(ids.map((id, index) => [id, index]));
-                const newValues =  values.sort((a, b) => (idMap.get(a.id) ?? 0) - (idMap.get(b.id) ?? 0));
+                const newValues = values.sort((a, b) => (idMap.get(a.id) ?? 0) - (idMap.get(b.id) ?? 0));
                 setItems(newValues)
             }
-            
         })
     }
-
 
     useEffect(() => {
         setItems([])
         getItems()
     }, [])
 
+    const handleLayout = (event: any) => {
+        const { width, height } = event.nativeEvent.layout
+        setDimensions({ width, height })
+    }
+
     const renderCards = useMemo<React.ReactNode>(() => {
         if (items) {
-            return items.map((item, index) => (
-                <Card
-                    name={item.name}
-                    id={item.id}
-                    key={item.id}
-                    onDrag={onDrag}
-                    onDrop={onDrop}
-                    display={activeCards.includes(item.id) ? true : display}
-                    index={index}
-                />
-            ))
+            const cardsPerRow = Math.floor(dimensions.width / cardSize)
+            return items.map((item, index) => {
+                const row = Math.floor(index / cardsPerRow)
+                const col = index % cardsPerRow
+                const left = col * cardSize
+                const top = row * cardSize
+
+                return (
+                    <Card
+                        name={item.name}
+                        id={item.id}
+                        key={item.id}
+                        onDrag={onDrag}
+                        onDrop={onDrop}
+                        display={activeCards.includes(item.id) ? true : display}
+                        index={index}
+                        left={left}
+                        top={top}
+                        cardSize={cardSize}
+                    />
+                )
+            })
         }
         return []
-    }, [JSON.stringify(items), display])
+    }, [JSON.stringify(items), display, dimensions])
 
     return (
-        <View style={style.wrap}>
+        <View style={style.wrap} onLayout={handleLayout}>
             {renderCards}
         </View>
     )
@@ -62,8 +79,7 @@ const style = StyleSheet.create({
         height: '100%',
         padding: 20,
         gap: 10,
-        borderWidth: 1,
-        borderColor: 'green'
+        position: 'relative' // Ensure the wrap is the relative container
     },
     cardWrap: {
         width: 100,

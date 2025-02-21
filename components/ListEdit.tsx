@@ -1,15 +1,9 @@
 import { Item } from "@/types"
-import { FC, forwardRef, useEffect, useMemo, useRef, useState } from "react"
-import { Button, Modal, StyleSheet, Text, TouchableOpacity, View, TextInput } from "react-native"
+import { FC, useEffect, useState } from "react"
+import { StyleSheet, TouchableOpacity, View, FlatList } from "react-native"
 import AntDesign from '@expo/vector-icons/AntDesign';
-import STYLES from "@/constants/styles";
-import useTranslation from "@/localization";
-import speak from "@/speak";
 import { useSelector } from "react-redux";
-import STORAGE from "@/storage";
 import ListEditItem from "./ListEditItem";
-import { DraxProvider, DraxView } from "react-native-drax";
-import { NestableDraggableFlatList, NestableScrollContainer, RenderItemParams, ScaleDecorator } from "react-native-draggable-flatlist";
 
 interface Props {
     list: Item[]
@@ -18,6 +12,8 @@ interface Props {
     groupId: number
     onAdd: (index: number) => void
     onOrderChange: (data: number[], index: number) => void
+    deleteItem: (data: number[], index: number, deletedId: number) => void
+    onEdit: (id: number, currentName: string) => void
 }
 
 const ListEdit: FC<Props> = ({
@@ -27,70 +23,81 @@ const ListEdit: FC<Props> = ({
     groupId,
     onAdd,
     onOrderChange,
+    deleteItem,
+    onEdit,
 }) => {
     const { lang } = useSelector(state => state.global)
-    const t = useTranslation()
 
-    const [newItemName, setNewItemName] = useState<string>('')
-    
     const [innerList, setInnerList] = useState<number[]>([])
 
     useEffect(() => {
         setInnerList(listMap)
-    }, [])
-
+    }, [listMap])
 
     const addItem = () => {
         onAdd(index)
     }
 
-    const saveItem = () => {
-        STORAGE.addItem(newItemName, lang).then(itemId => {
-            if (itemId) {
-                console.log({ itemId })
-                onAdd(itemId, index)
-                setNewItemName('')
-                setShowModal(false)
-            }
-        })
+    const moveDown = (id: number) => {
+        const currentIndex = listMap.indexOf(id)
+        if (currentIndex < listMap.length - 1) {
+            const newListMap = [...listMap]
+            const temp = newListMap[currentIndex]
+            newListMap[currentIndex] = newListMap[currentIndex + 1]
+            newListMap[currentIndex + 1] = temp
+            onOrderChange(newListMap, index)
+        }
     }
 
-    const changeOrder = (data: number[]) => {
-        setInnerList(data);
-        onOrderChange(data, index)
+    const moveUp = (id: number) => {
+        const currentIndex = listMap.indexOf(id)
+        if (currentIndex > 0) {
+            const newListMap = [...listMap]
+            const temp = newListMap[currentIndex]
+            newListMap[currentIndex] = newListMap[currentIndex - 1]
+            newListMap[currentIndex - 1] = temp
+            onOrderChange(newListMap, index)
+        }
     }
 
-    const speakOut = () => {
-        speak(newItemName, lang)
+    const handleDeleteItem = (id: number) => {
+        const newListMap = listMap.filter(item => item !== id)
+        deleteItem(newListMap, index, id)
     }
 
-    const renderItem = ({ item, drag, isActive }: RenderItemParams<number>) => {
+    const editItem = (id: number) => {
+        onEdit(id, list.find(({ id }) => id === id)?.name || '')
+    }
+
+    const renderItem = ({ item }: { item: number }) => {
+        const currentIndex = listMap.indexOf(item)
+        const isFirst = currentIndex === 0
+        const isLast = currentIndex === listMap.length - 1
+
         return (
-            <ScaleDecorator>
-                <TouchableOpacity
-                    onLongPress={drag}
-                    disabled={isActive}
-                >
-                    <ListEditItem id={item} item={list.find(({ id }) => id === item) || null}/>
-                </TouchableOpacity>
-            </ScaleDecorator>
+            <ListEditItem
+                id={item}
+                item={list.find(({ id }) => id === item) || null}
+                moveDown={moveDown}
+                moveUp={moveUp}
+                deleteItem={handleDeleteItem}
+                editItem={editItem}
+                disableUp={isFirst}
+                disableDown={isLast}
+            />
         );
     };
 
     return (
         <View style={style.wrap}>
-            <NestableScrollContainer>
-                <NestableDraggableFlatList
-                    data={innerList}
-                    renderItem={renderItem}
-                    keyExtractor={item => item.toString()}
-                    onDragEnd={({ data }) => changeOrder(data)}
-                />
-            </NestableScrollContainer>
+            <FlatList
+                data={innerList}
+                renderItem={renderItem}
+                keyExtractor={item => item.toString()}
+            />
             <TouchableOpacity style={style.addItem} onPress={addItem}>
                 <AntDesign name="plus" size={24} color="grey" />
             </TouchableOpacity>
-
         </View>
     )
 }
@@ -108,30 +115,9 @@ const style = StyleSheet.create({
         alignItems: "center",
         justifyContent: "center",
     },
-    innerModalWrap: {
-        // borderWidth: 1,
-        // width: 500,
-        // justifyContent: "center",
-        // alignItems: "stretch",
-        // borderRadius: 20,
-        // backgroundColor: '#fff',
-        // padding: 20,
-        // gap: 5
-    },
-    centeredView: {
-        // justifyContent: 'center',
-        // alignItems: 'center',
-    },
     nameInputWrap: {
         flexDirection: "row"
     }
 })
-
-const styles = StyleSheet.create({
-    container: { flex: 1, justifyContent: 'center', alignItems: 'center' },
-    draxBox: { width: 100, height: 100, margin: 20, backgroundColor: 'gray', justifyContent: 'center', alignItems: 'center' },
-    draggable: { width: 100, height: 100, backgroundColor: 'skyblue', justifyContent: 'center', alignItems: 'center' },
-    text: { color: 'white', textAlign: 'center' },
-  });
 
 export default ListEdit
