@@ -27,6 +27,9 @@ const speak = (text: string, lang = DEFAULT_LANG) => {
         } else {
             Speech.speak(text, {
                 language: savedLang,
+                rate: savedSpeed / 100,
+                voice: savedVoice,
+                pitch: 1,
                 onError
             });
         }
