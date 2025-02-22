@@ -207,7 +207,7 @@ const createStarterBoard = async (userId: number) => {
 
     const { lastInsertRowId: lastGroup1Inserted } = await db.runAsync(
       `INSERT INTO groups (name, color, lists) VALUES (?, ?, ?);`,
-      ['Group 1', '#65a8c7', JSON.stringify([])]
+      ['Group 1', '#65a8c7', JSON.stringify([[],[],[]])]
     );
     console.log("Group added successfully!", lastGroup1Inserted);
 

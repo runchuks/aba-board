@@ -74,7 +74,10 @@ const Card: FC<Props> = ({ id, name, onDrag, onDrop, display, index, left, top, 
       ]}
       {...panResponder.panHandlers}
     >
-      <View style={style.innerWrap}>
+      <View style={[style.innerWrap, {
+        width: cardSize - 20,
+        height: cardSize - 20,
+      }]}>
         <ImageBackground
           source={{ uri: image || undefined }}
           style={{ width: '100%', height: '100%' }}
@@ -108,15 +111,12 @@ const style = StyleSheet.create({
     alignItems: 'center',
     zIndex: 1,
     position: 'absolute',
-    padding: 10,
   },
   innerWrap: {
     borderWidth: 1,
     borderRadius: 5,
     justifyContent: 'center',
     alignItems: 'center',
-    width: 80,
-    height: 80,
     backgroundColor: '#fff',
     overflow: 'hidden',
   },

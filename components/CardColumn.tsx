@@ -12,11 +12,13 @@ interface Props {
     activeCards: number[]
 }
 
-const cardSize = 100
+const minCardSize = 100
+const maxCardSize = 200
 
 const CardColumn: FC<Props> = ({ ids, onDrag, onDrop, display, activeCards }) => {
     const [items, setItems] = useState<Item[]>([])
     const [dimensions, setDimensions] = useState({ width: 0, height: 0 })
+    const [cardSize, setCardSize] = useState(minCardSize)
 
     const getItems = () => {
         STORAGE.getItemsByIds(ids).then(values => {
@@ -33,9 +35,18 @@ const CardColumn: FC<Props> = ({ ids, onDrag, onDrop, display, activeCards }) =>
         getItems()
     }, [])
 
+
+    useEffect(() => {
+        console.log('card size', cardSize)
+    }, [cardSize])
+
     const handleLayout = (event: any) => {
         const { width, height } = event.nativeEvent.layout
         setDimensions({ width, height })
+
+        // const cardsPerRow = Math.floor(width / minCardSize)
+        // const optimalCardSize = Math.min(maxCardSize, Math.floor(width / cardsPerRow))
+        // setCardSize(optimalCardSize)
     }
 
     const renderCards = useMemo<React.ReactNode>(() => {
@@ -65,7 +76,7 @@ const CardColumn: FC<Props> = ({ ids, onDrag, onDrop, display, activeCards }) =>
             })
         }
         return []
-    }, [items, dimensions.width, onDrag, onDrop, activeCards, display])
+    }, [items, dimensions.width, cardSize, onDrag, onDrop, activeCards, display])
 
     return (
         <View style={style.wrap} onLayout={handleLayout}>

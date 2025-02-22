@@ -13,6 +13,7 @@ export interface GlobalState {
     items: Record<number, Item>
     speechLang: string
     speechSpeed: number
+    locked: boolean
 }
 
 export interface User {

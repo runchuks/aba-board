@@ -1,13 +1,14 @@
 import STYLES from "@/constants/styles"
 import useTranslation from "@/localization"
 import { LANGS } from "@/localization/constants"
-import { setLang, setSpeechLang, setSpeechSpeed } from "@/store/slices/global"
+import { setLang, setMasterPin, setSpeechLang, setSpeechSpeed, setLocked } from "@/store/slices/global"
 import { useCallback, useEffect, useState } from "react"
-import { Text, View } from "react-native"
+import { Text, TextInput, View } from "react-native"
 import { Dropdown } from "react-native-element-dropdown"
 import { useDispatch, useSelector } from "react-redux"
 import * as Speech from 'expo-speech'
 import Slider from '@react-native-community/slider';
+import Checkbox from 'expo-checkbox';
 
 const timeout = 1000;
 const maxAttempts = 5;
@@ -15,9 +16,9 @@ const maxAttempts = 5;
 const GeneralSettings = () => {
     const t = useTranslation()
     const dispatch = useDispatch()
-    const { lang, speechLang, speechSpeed } = useSelector((state) => state.global)
+    const { lang, speechLang, speechSpeed, masterPin, locked } = useSelector((state) => state.global)
     const [availableLanguages, setAvailableLanguages] = useState<{ title: string, value: string }[]>([])
-    const [innerSpeechSpeed, setInnerSpeechSpeed] = useState<number>(speechSpeed)
+    const [innerSpeechSpeed, setInnerSpeechSpeed] = useState<number>(Number(speechSpeed))
 
     const getVoices = useCallback((time: number) => {
         console.log('Getting voices: ', time)
@@ -31,6 +32,11 @@ const GeneralSettings = () => {
                     }))
                     .filter(language => language.name === lang)
                 setAvailableLanguages(languages)
+                if (languages.length) {
+                    dispatch(setSpeechLang(languages[0].value))
+                } else {
+                    dispatch(setSpeechLang(''))
+                }
             } else {
                 if (time < maxAttempts) {
                     setTimeout(() => getVoices(time + 1), timeout)
@@ -83,9 +89,9 @@ const GeneralSettings = () => {
                 />
             </View>
             <View style={STYLES.inputWrap}>
-                <Text style={STYLES.inputLabel}>{t('Speech speed')}</Text>
+                <Text style={STYLES.inputLabel}>{t('Speech speed')}: {innerSpeechSpeed}</Text>
                 <Slider
-                    style={{ width: 400, height: 40, padding: 0 }}
+                    style={{ width: 400, height: 40, padding: 0, margin: 0 }}
                     minimumValue={0}
                     lowerLimit={10}
                     maximumValue={200}
@@ -95,7 +101,26 @@ const GeneralSettings = () => {
                     onSlidingComplete={handleSpeechSpeedChange}
                     onValueChange={setInnerSpeechSpeed}
                 />
-                <Text style={{}}>{innerSpeechSpeed}</Text>
+            </View>
+            <View style={STYLES.inputWrap}>
+                <Text style={STYLES.inputLabel}>{t('PIN')}</Text>
+                <View
+                    style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' }}
+                >
+                    <Checkbox
+                        value={locked}
+                        onValueChange={val => dispatch(setLocked(val))}
+                        color={locked ? '#4630EB' : undefined}
+                        style={{ marginRight: 10 }}
+                    />
+                    <TextInput
+                        style={[STYLES.input, { flex: 1 }]}
+                        value={masterPin}
+                        onChangeText={value => dispatch(setMasterPin(value))}
+                        keyboardType="number-pad"
+                        keyboardAppearance="light"
+                    />
+                </View>
             </View>
         </View>
     )

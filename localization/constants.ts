@@ -1,10 +1,12 @@
 import LV from './languages/lv-LV.json'
 import DE from './languages/de-DE.json'
+import UK from './languages/uk-UA.json'
 
 export enum LANG {
     LV = 'lv-LV',
     EN = 'en-US',
     DE = 'de-DE',
+    UK = 'uk-UA',
 }
 
 export const LANGS = {
@@ -22,5 +24,10 @@ export const LANGS = {
         title: 'Deutsch',
         translations: DE,
         value: LANG.DE,
+    },
+    [LANG.UK]: {
+        title: 'Українська',
+        translations: UK,
+        value: LANG.UK,
     }
 }

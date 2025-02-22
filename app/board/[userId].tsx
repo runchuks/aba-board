@@ -247,7 +247,6 @@ const style = StyleSheet.create({
     groups: {
         height: 40,
         flexDirection: "row",
-        backgroundColor: "grey",
         gap: 5,
     },
     board: {
@@ -256,7 +255,6 @@ const style = StyleSheet.create({
     },
     readLine: {
         flex: 1,
-        backgroundColor: "grey",
     },
     readLineControls: {
         position: "absolute",
@@ -265,7 +263,8 @@ const style = StyleSheet.create({
         width: 50,
         height: 145,
         alignItems: "center",
-        justifyContent: "space-around",
+        justifyContent: "flex-start",
+        gap: 10
     }
 })
 
