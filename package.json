@@ -52,7 +52,8 @@
     "react-redux": "^9.2.0",
     "reanimated-color-picker": "^3.0.6",
     "expo-file-system": "~18.0.11",
-    "expo-battery": "~9.0.2"
+    "expo-battery": "~9.0.2",
+    "expo-dev-client": "~5.0.12"
   },
   "devDependencies": {
     "@babel/core": "^7.25.2",
