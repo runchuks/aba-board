@@ -13,7 +13,7 @@ interface Props {
     onAdd: (index: number) => void
     onOrderChange: (data: number[], index: number) => void
     deleteItem: (data: number[], index: number, deletedId: number) => void
-    onEdit: (id: number, currentName: string) => void
+    onEdit: (id: number, currentItem: Item) => void
 }
 
 const ListEdit: FC<Props> = ({
@@ -66,7 +66,11 @@ const ListEdit: FC<Props> = ({
     }
 
     const editItem = (id: number) => {
-        onEdit(id, list.find(({ id }) => id === id)?.name || '')
+        const currentItem = list.find((item) => item.id === id);
+        if (currentItem) {
+            onEdit(id, currentItem)
+        }
+
     }
 
     const renderItem = ({ item }: { item: number }) => {

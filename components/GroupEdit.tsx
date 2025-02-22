@@ -1,7 +1,7 @@
 import STYLES from "@/constants/styles";
 import { Group, Item } from "@/types";
 import { FC, useEffect, useMemo, useRef, useState } from "react";
-import { Alert, Button, Keyboard, Modal, StyleSheet, Text, TextInput, TouchableOpacity, View } from "react-native";
+import { Alert, Button, Dimensions, Keyboard, Modal, StyleSheet, Text, TextInput, TouchableOpacity, View } from "react-native";
 import MaterialIcons from '@expo/vector-icons/MaterialIcons';
 import AntDesign from '@expo/vector-icons/AntDesign';
 import STORAGE from "@/storage";
@@ -14,6 +14,9 @@ import speak from "@/speak";
 import ListEdit from "./ListEdit";
 import { DraxProvider } from "react-native-drax";
 import { useRouter } from "expo-router";
+import { CameraView, CameraType, useCameraPermissions } from 'expo-camera';
+import EditItem from "./EditItem";
+import * as FileSystem from 'expo-file-system';
 
 interface Props {
     name: string
@@ -23,6 +26,10 @@ interface Props {
     listsMap: number[][]
     onRefresh: () => void
 }
+
+
+const windowHeight = Dimensions.get('window').height;
+const windowWidth = Dimensions.get('window').width;
 
 const GroupEdit: FC<Props> = ({
     onRefresh,
@@ -44,6 +51,7 @@ const GroupEdit: FC<Props> = ({
 
 
     const [newItemName, setNewItemName] = useState<string>('')
+    const [newImage, setNewImage] = useState<string | null>(null)
     const [listToAddItemIndex, setListToAddItemIndex] = useState<number | null>(null)
 
     const [editItemId, setEditItemId] = useState<number | null>(null)
@@ -73,9 +81,10 @@ const GroupEdit: FC<Props> = ({
         setListToAddItemIndex(index)
     }
 
-    const onEdit = (id: number, currentName: string) => {
+    const onEdit = (id: number, currentItem: Item) => {
         setEditItemId(id)
-        setNewItemName(currentName)
+        setNewItemName(currentItem.name)
+        setNewImage(currentItem.image)
     }
 
     const saveItem = () => {
@@ -88,20 +97,81 @@ const GroupEdit: FC<Props> = ({
                     STORAGE.updateGroupById(id, {
                         lists: JSON.stringify(newLists)
                     }).then(() => {
-
-                        onRefresh()
-                        setShowAddModal(false)
-                        setListToAddItemIndex(null);
+                        if (newImage) {
+                            const path = FileSystem.documentDirectory + `image-${itemId}.jpg`
+                            FileSystem.copyAsync({
+                                from: newImage,
+                                to: path
+                            }).then(() => {
+                                STORAGE.updateItemById(itemId, {
+                                    image: path
+                                }).then(() => {
+                                    onRefresh()
+                                    handleCloseAddModal()
+                                })
+                            })
+                        }
                     })
                 }
             })
         } else if (editItemId !== null) {
-            STORAGE.updateItemById(editItemId, {
-                name: newItemName
-            }).then(() => {
-                onRefresh()
-                handleCloseAddModal()
-            })
+
+            if (newImage) {
+                const path = FileSystem.documentDirectory + `image-${editItemId}.jpg`
+
+                FileSystem.getInfoAsync(path).then(({ exists }) => {
+                    if (exists) {
+                        console.log('exists')
+                        FileSystem.deleteAsync(path).then(() => {
+                            console.log('deleted')
+                            FileSystem.copyAsync({
+                                from: newImage,
+                                to: path
+                            }).then(() => {
+                                console.log('copied')
+                                STORAGE.updateItemById(editItemId, {
+                                    name: newItemName,
+                                }).then(() => {
+                                    onRefresh()
+                                    handleCloseAddModal()
+                                })
+                            }).catch(err => {
+                                console.log(err)
+                            })
+                        }).catch(err => {
+                            console.log(err)
+                        })
+                    } else {
+                        FileSystem.copyAsync({
+                            from: newImage,
+                            to: path
+                        }).then(() => {
+                            console.log('copied')
+                            STORAGE.updateItemById(editItemId, {
+                                name: newItemName,
+                                image: path
+                            }).then(() => {
+                                onRefresh()
+                                handleCloseAddModal()
+                            })
+                        }).catch(err => {
+                            console.log(err)
+                        })
+                    }
+                }).catch(err => {
+                    console.log(err)
+                })
+
+            } else {
+                STORAGE.updateItemById(editItemId, {
+                    name: newItemName,
+                }).then(() => {
+                    onRefresh()
+                    handleCloseAddModal()
+                })
+            }
+
+
         }
 
     }
@@ -177,6 +247,8 @@ const GroupEdit: FC<Props> = ({
         setShowAddModal(false)
         setListToAddItemIndex(null)
         setEditItemId(null)
+        setNewImage(null)
+        setNewItemName('')
     }
 
     return (
@@ -209,13 +281,14 @@ const GroupEdit: FC<Props> = ({
                     </View>
                 </View>
                 <Modal visible={showModal} animationType='slide' transparent>
-                    <View style={style.centeredView}>
+                    <View style={[style.centeredView]}>
                         <View style={style.colorPickerWrap}>
                             <ColorPicker style={{ width: '100%' }} value={color} onComplete={onSelectColor}>
                                 <Preview />
-                                <Panel1 style={{ marginVertical: 10 }} />
-                                <HueSlider style={{ marginVertical: 10 }} />
-                                <Swatches style={{ marginVertical: 10 }} />
+                                <View style={{ flexDirection: 'row', justifyContent: 'space-between', gap: 10 }}>
+                                    <Panel1 style={{ marginVertical: 10, flex: 1 }} />
+                                    <HueSlider style={{ marginVertical: 10 }} vertical />
+                                </View>
                             </ColorPicker>
                             <Button title={t('Ok')} onPress={closeColorPickerModal} />
                         </View>
@@ -232,23 +305,15 @@ const GroupEdit: FC<Props> = ({
                 >
                     <View style={style.centeredView}>
                         <View style={style.innerModalWrap}>
-                            <View style={style.nameInputWrap}>
-                                <View style={[STYLES.inputWrap, { flex: 1 }]}>
-                                    <Text style={STYLES.inputLabel}>{t('Item name')}</Text>
-                                    <TextInput
-                                        value={newItemName}
-                                        onChangeText={setNewItemName}
-                                        style={STYLES.input}
-                                    />
-                                </View>
-                                <View style={{ justifyContent: "flex-end", paddingBottom: 5, marginLeft: 10 }}>
-                                    <TouchableOpacity onPress={speakOut} disabled={!newItemName}>
-                                        <AntDesign name="sound" size={24} color={!newItemName ? 'grey' : 'black'} />
-                                    </TouchableOpacity>
-                                </View>
-                            </View>
-                            <Button title={t('Save')} onPress={saveItem} />
-                            <Button title={t('Close')} color={'red'} onPress={handleCloseAddModal} />
+                            <EditItem
+                                itemName={newItemName}
+                                itemImage={newImage}
+                                onItemNameChange={setNewItemName}
+                                onImageChange={setNewImage}
+                                onSave={saveItem}
+                                onClose={handleCloseAddModal}
+                                onSpeakOut={speakOut}
+                            />
                         </View>
                     </View>
                 </Modal>
@@ -351,7 +416,9 @@ const style = StyleSheet.create({
         gap: 5
     },
     nameInputWrap: {
-        flexDirection: "row"
+        flexDirection: "row",
+        alignItems: "flex-start",
+        flex: 1,
     }
 })
 

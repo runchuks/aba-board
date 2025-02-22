@@ -59,12 +59,13 @@ const CardColumn: FC<Props> = ({ ids, onDrag, onDrop, display, activeCards }) =>
                         left={left}
                         top={top}
                         cardSize={cardSize}
+                        image={item.image}
                     />
                 )
             })
         }
         return []
-    }, [JSON.stringify(items), display, dimensions])
+    }, [items, dimensions.width, onDrag, onDrop, activeCards, display])
 
     return (
         <View style={style.wrap} onLayout={handleLayout}>

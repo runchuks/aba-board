@@ -417,7 +417,7 @@ const deleteItemById = async (itemId: number) => {
   }
 };
 
-const updateItemById = async (itemId: number, updates: { name?: string; }) => {
+const updateItemById = async (itemId: number, updates: { name?: string; image?: string; }) => {
   try {
       const db = await getDatabase();
   
@@ -429,6 +429,10 @@ const updateItemById = async (itemId: number, updates: { name?: string; }) => {
           fields.push("name = ?");
           values.push(updates.name);
       }
+      if (updates.image !== undefined) {
+        fields.push("image = ?");
+        values.push(updates.image);
+    }
   
       if (fields.length === 0) {
           console.warn("No updates provided.");
