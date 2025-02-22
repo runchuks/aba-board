@@ -76,7 +76,7 @@ const Card: FC<Props> = ({ id, name, onDrag, onDrop, display, index, left, top, 
     >
       <View style={style.innerWrap}>
         <ImageBackground
-          source={{ uri: image }}
+          source={{ uri: image || undefined }}
           style={{ width: '100%', height: '100%' }}
           resizeMode='cover'
 
@@ -84,21 +84,21 @@ const Card: FC<Props> = ({ id, name, onDrag, onDrop, display, index, left, top, 
           <View
             style={{
               backgroundColor: image ? 'rgba(255,255,255,.3)' : 'transparent',
-              width: '100%',
-              height: 20,
+              // backgroundColor: 'red',
+              width: cardSize - 20,
+              height: image ? 20 : cardSize - 20,
               justifyContent: 'center',
               alignItems: 'center',
               position: 'absolute',
-              bottom: image ? 0 : '50%',
-              transform: [{ translateY: image ? 0 : '50%' }],
+              bottom: 0,
               left: 0
             }}
           >
             <Text style={style.text}>{name}</Text>
           </View>
         </ImageBackground>
-      </View>
-    </Animated.View>
+      </View >
+    </Animated.View >
   );
 };
 
@@ -124,6 +124,7 @@ const style = StyleSheet.create({
     fontSize: 14,
     textAlign: 'center',
     fontWeight: 'bold',
+    paddingHorizontal: 5,
   },
 });
 

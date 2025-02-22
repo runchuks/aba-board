@@ -12,6 +12,7 @@ export interface GlobalState {
     masterPin: string
     items: Record<number, Item>
     speechLang: string
+    speechSpeed: number
 }
 
 export interface User {

@@ -5,7 +5,7 @@ import STORAGE from "@/storage";
 import { useNavigation } from "expo-router";
 import { useEffect, useMemo, useState } from "react";
 import { RefreshControl, ScrollView, StyleSheet, View } from "react-native";
-import {  useSelector } from "react-redux";
+import { useSelector } from "react-redux";
 import { User } from "@/types";
 
 
@@ -18,7 +18,7 @@ export default function Index() {
   const [refreshing, setRefreshing] = useState(false);
 
   const renderKids = useMemo(() => {
-    return users.map(user => <UserCard {...user} key={user.id}/>)
+    return users.map(user => <UserCard {...user} key={user.id} />)
   }, [users])
 
   const refreshUsers = () => {

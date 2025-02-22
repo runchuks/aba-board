@@ -110,6 +110,9 @@ const GroupEdit: FC<Props> = ({
                                     handleCloseAddModal()
                                 })
                             })
+                        } else {
+                            onRefresh()
+                            handleCloseAddModal()
                         }
                     })
                 }

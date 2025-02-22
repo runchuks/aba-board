@@ -1,4 +1,4 @@
-import { DEFAULT_LANG, DEFAULT_PIN } from "@/constants/global";
+import { DEFAULT_LANG, DEFAULT_PIN, DEFAULT_SPPECH_SPEED } from "@/constants/global";
 import { LANG } from "@/localization/constants";
 import { GlobalState, Item } from "@/types";
 import { createSlice, PayloadAction } from "@reduxjs/toolkit";
@@ -10,6 +10,7 @@ const initialState = {
     masterPin: SecureStore.getItem('masterPin') || DEFAULT_PIN,
     items: {},
     speechLang: SecureStore.getItem('speechLang') || DEFAULT_LANG,
+    speechSpeed: SecureStore.getItem('speechSpeed') || DEFAULT_SPPECH_SPEED,
 } as GlobalState
 
 const globalSlice = createSlice({
@@ -26,9 +27,13 @@ const globalSlice = createSlice({
     setSpeechLang: (state, action: PayloadAction<string>) => {
         SecureStore.setItem('speechLang', action.payload)
         state.speechLang = action.payload;
+    },
+    setSpeechSpeed: (state, action: PayloadAction<number>) => {
+        SecureStore.setItem('speechSpeed', action.payload.toString())
+        state.speechSpeed = action.payload;
     }
   },
 });
 
-export const { setLang, setItems, setSpeechLang } = globalSlice.actions;
+export const { setLang, setItems, setSpeechLang, setSpeechSpeed } = globalSlice.actions;
 export default globalSlice.reducer;

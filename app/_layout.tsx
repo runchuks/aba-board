@@ -17,6 +17,15 @@ export default function RootLayout() {
     STORAGE.initDb();
     STORAGE.enableForeignKeys();
     STORAGE.migration();
+    STORAGE.checkDatabaseStructure().then((missingColumns) => {
+      if (Object.keys(missingColumns).length === 0) {
+        console.log("Database structure is correct.");
+      } else {
+        STORAGE.addMissingColumns(missingColumns);
+      }
+    }).catch((error) => {
+      console.error("Error checking database structure:", error);
+    });
   }, [])
 
   return (

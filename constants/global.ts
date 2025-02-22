@@ -1,7 +1,8 @@
 import { LANG } from "@/localization/constants";
 
-export const DEFAULT_PIN = '0000';
+export const DEFAULT_PIN = '0000'
 export const DEFAULT_LANG = LANG.EN
+export const DEFAULT_SPPECH_SPEED = 100
 
 export const DEFAULT_STARTER_BOARD = {
     groups: [

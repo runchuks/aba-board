@@ -53,7 +53,8 @@
     "reanimated-color-picker": "^3.0.6",
     "expo-file-system": "~18.0.11",
     "expo-battery": "~9.0.2",
-    "expo-dev-client": "~5.0.12"
+    "expo-dev-client": "~5.0.12",
+    "@react-native-community/slider": "4.5.5"
   },
   "devDependencies": {
     "@babel/core": "^7.25.2",

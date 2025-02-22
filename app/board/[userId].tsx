@@ -185,7 +185,7 @@ const Board = () => {
     }, [userId, activeGroupId, insideIds.length]);
 
     return (
-        <View>
+        <View style={{ height: '100%' }}>
             <View style={[style.head, { backgroundColor: bacgroundColor }]}>
                 <TouchableOpacity onPress={goBack} style={style.headBtn}>
                     <Ionicons name="arrow-back-outline" size={24} color="black" />
@@ -242,7 +242,7 @@ const style = StyleSheet.create({
         padding: 10,
     },
     boardWrap: {
-
+        flex: 1
     },
     groups: {
         height: 40,
@@ -253,12 +253,10 @@ const style = StyleSheet.create({
     board: {
         height: windowHeight - 150 - 50,
         flexDirection: "row",
-        marginRight: -200
     },
     readLine: {
-        height: 145,
+        flex: 1,
         backgroundColor: "grey",
-        position: "relative"
     },
     readLineControls: {
         position: "absolute",
