@@ -11,7 +11,7 @@ interface Props {
     display: boolean
     activeCards: number[]
     cardSize: number
-    last: booleam
+    last: boolean
 }
 
 const CardColumn: FC<Props> = ({ ids, onDrag, onDrop, display, activeCards, cardSize, last }) => {
@@ -86,7 +86,7 @@ const style = StyleSheet.create({
         gap: 10,
         position: 'relative',
         borderRightWidth: 1,
-        borderRightColor: 'rgba(0,0,0,.1)',
+        borderRightColor: 'rgba(99,99,99,.05)',
     },
     last: {
         borderRightWidth: 0

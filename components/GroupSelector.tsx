@@ -17,8 +17,8 @@ const GroupSelector: FC<Props> = ({ title, color, onPress, active }) => {
             ]}
             onPress={onPress}
         >
-            <Text 
-                numberOfLines={1} 
+            <Text
+                numberOfLines={1}
                 style={[
                     style.text,
                     active && style.active,
@@ -38,7 +38,13 @@ const style = StyleSheet.create({
         borderBottomLeftRadius: 20,
         borderBottomRightRadius: 20,
         marginHorizontal: 3,
-        paddingHorizontal: 10
+        paddingHorizontal: 10,
+        shadowColor: '#000',
+        shadowOffset: { width: -2, height: 4 },
+        shadowOpacity: 1,
+        shadowRadius: 3,
+        elevation: 10,
+        height: '90%'
     },
     text: {
         fontSize: 16

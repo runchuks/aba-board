@@ -13,9 +13,12 @@ import { useDispatch, useSelector } from "react-redux";
 import { setItems } from "@/store/slices/global";
 import speak from "@/speak";
 import MaterialIcons from '@expo/vector-icons/MaterialIcons';
+import { DEFAULT_READ_LINE_HEIGHT, GROUP_HEIGHT, MAX_CARD_SIZE } from "@/constants/global";
 
 const windowHeight = Dimensions.get('window').height;
 const windowWidth = Dimensions.get('window').width;
+
+const COLUMN_HEIGHT = windowHeight - GROUP_HEIGHT - DEFAULT_READ_LINE_HEIGHT - 50;
 
 const Board = () => {
     const { userId } = useLocalSearchParams()
@@ -40,7 +43,6 @@ const Board = () => {
     const insideCards = useRef<Record<number, number | null>>({});
 
     const [cardSize, setCardSize] = useState<number>(0);
-
 
     const activeGroup = useMemo(() => {
         return groups.find(({ id }) => id === activeGroupId) || null
@@ -148,26 +150,33 @@ const Board = () => {
         }
     }, [autoSpeak, currentText, lang])
 
-    const calculateAreaDifference = (cardSize: number, columnArea: number, maxCardCount: number) => {
-        const cardTotalArea = (maxCardCount * 2) * (cardSize * cardSize);
-        if (cardTotalArea > columnArea) {
-            console.log('cardTotalArea', cardTotalArea)
-            console.log('columnArea', columnArea)
+    const calculateAreaDifference = (
+        cardSize: number,
+        columnWidth: number,
+        columnHeight: number,
+        maxCardCount: number,
+    ) => {
+        const maxCountInColumnY = Math.floor(columnHeight / cardSize);
+        const maxCountInColumnX = Math.floor(columnWidth / cardSize);
+        const maxCountTotal = maxCountInColumnX * maxCountInColumnY;
 
-            return calculateAreaDifference(cardSize - 1, columnArea, maxCardCount)
+        if (maxCardCount > maxCountTotal) {
+
+            return calculateAreaDifference(cardSize - 10, columnWidth, columnHeight, maxCardCount)
         }
         return cardSize;
     }
 
     useEffect(() => {
         ///list optiomal size calculation
-        const columnHeight = windowHeight - 150 - 50;
-        const columnWidth = windowWidth / 3;
-        const columnArea = columnHeight * columnWidth;
 
         let maxCardCount = 0;
+        let maxColumnCount = 0;
 
         groups.forEach(group => {
+            if (group.lists.length > maxColumnCount) {
+                maxColumnCount = group.lists.length
+            }
             group.lists.forEach(list => {
                 if (list.length > maxCardCount) {
                     maxCardCount = list.length
@@ -175,10 +184,14 @@ const Board = () => {
             })
         })
 
-        let tempCardSize = 300;
+        console.log({ maxCardCount, maxColumnCount })
+
+        const columnWidth = windowWidth / maxColumnCount;
+
+        let tempCardSize = MAX_CARD_SIZE;
 
         if (maxCardCount > 0) {
-            const calculatedCardSize = calculateAreaDifference(tempCardSize, columnArea, maxCardCount);
+            const calculatedCardSize = calculateAreaDifference(tempCardSize, columnWidth, COLUMN_HEIGHT, maxCardCount);
             setCardSize(calculatedCardSize)
             console.log('cardSize', calculatedCardSize)
         }
@@ -203,7 +216,7 @@ const Board = () => {
             return (
                 <View style={{
                     position: "absolute",
-                    height: windowHeight - 150 - 50,
+                    height: COLUMN_HEIGHT,
                     width: windowWidth,
                     flexDirection: "row",
                 }} key={g.id}>
@@ -212,6 +225,10 @@ const Board = () => {
             )
         })
     }, [groups, activeGroupId, insideIds, cardSize]);
+
+    const restartBoard = () => {
+        refreshBoard()
+    }
 
     return (
         <View style={{ height: '100%' }}>
@@ -244,14 +261,17 @@ const Board = () => {
                     </ScrollView>
 
                 </View>
-                <View style={style.readLine} ref={dropZoneRef}>
+                <View style={[style.readLine, { height: DEFAULT_READ_LINE_HEIGHT }]} ref={dropZoneRef}>
                     <View style={style.readLineControls}>
                         <TouchableOpacity onPress={() => setAutoSpeak(!autoSpeak)} style={{ alignItems: "center" }}>
                             <MaterialIcons name="auto-mode" size={24} color={autoSpeak ? 'blue' : 'black'} />
                             <Text style={{ fontSize: 7 }}>Auto: {autoSpeak ? 'on' : 'off'}</Text>
                         </TouchableOpacity>
                         <TouchableOpacity onPress={repeatSpeak}>
-                            <Feather name="volume-2" size={30} color="black" />
+                            <Feather name="volume-2" size={24} color="black" />
+                        </TouchableOpacity>
+                        <TouchableOpacity onPress={restartBoard}>
+                            <MaterialIcons name="restart-alt" size={24} color="black" />
                         </TouchableOpacity>
                     </View>
                 </View>
@@ -274,12 +294,14 @@ const style = StyleSheet.create({
         flex: 1
     },
     groups: {
-        height: 40,
+        height: GROUP_HEIGHT,
         flexDirection: "row",
         gap: 5,
+        marginTop: -.5,
+        overflow: 'visible'
     },
     board: {
-        height: windowHeight - 150 - 50,
+        height: COLUMN_HEIGHT,
         flexDirection: "row",
     },
     readLine: {
@@ -290,10 +312,10 @@ const style = StyleSheet.create({
         top: 0,
         right: 0,
         width: 50,
-        height: 145,
+        height: '100%',
         alignItems: "center",
         justifyContent: "flex-start",
-        gap: 10
+        gap: 10,
     }
 })
 

@@ -77,6 +77,7 @@ const Card: FC<Props> = ({ id, name, onDrag, onDrop, display, index, left, top, 
       <View style={[style.innerWrap, {
         width: cardSize - 20,
         height: cardSize - 20,
+        backgroundColor: image ? 'rgba(126, 126, 126, 0.55)' : '#fff',
       }]}>
         <ImageBackground
           source={{ uri: image || undefined }}
@@ -86,8 +87,7 @@ const Card: FC<Props> = ({ id, name, onDrag, onDrop, display, index, left, top, 
         >
           <View
             style={{
-              backgroundColor: image ? 'rgba(255,255,255,.3)' : 'transparent',
-              // backgroundColor: 'red',
+              backgroundColor: image ? 'rgba(255, 255, 255, 0.57)' : 'transparent',
               width: cardSize - 20,
               height: image ? 20 : cardSize - 20,
               justifyContent: 'center',
@@ -97,7 +97,13 @@ const Card: FC<Props> = ({ id, name, onDrag, onDrop, display, index, left, top, 
               left: 0
             }}
           >
-            <Text style={style.text}>{name}</Text>
+            <Text
+              adjustsFontSizeToFit={true}
+              numberOfLines={image ? 1 : 5}
+              style={style.text}
+            >
+              {name.trim()}
+            </Text>
           </View>
         </ImageBackground>
       </View >
@@ -117,8 +123,13 @@ const style = StyleSheet.create({
     borderRadius: 5,
     justifyContent: 'center',
     alignItems: 'center',
-    backgroundColor: '#fff',
+    borderColor: 'rgba(126, 126, 126, 0.55)',
     overflow: 'hidden',
+    shadowColor: '#000',
+    shadowOffset: { width: -2, height: 4 },
+    shadowOpacity: 1,
+    shadowRadius: 3,
+    elevation: 10,
   },
   text: {
     fontSize: 14,

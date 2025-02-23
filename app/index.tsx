@@ -32,7 +32,7 @@ export default function Index() {
   useEffect(() => {
     navigation.setOptions({
       title: t('Users'),
-      headerRight: () => <SettingsButton />
+      headerRight: () => <SettingsButton />,
     });
   }, [lang])
 

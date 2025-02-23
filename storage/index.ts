@@ -622,7 +622,8 @@ const STORAGE = {
   deleteItemById,
   updateItemById,
   checkDatabaseStructure,
-  addMissingColumns
+  addMissingColumns,
+  getDatabase,
 };
 
 export default STORAGE;

@@ -77,7 +77,6 @@ const EditGroup = () => {
 const style = StyleSheet.create({
     wrap: {
         padding: 10,
-        borderWidth: 1,
         height: '100%'
     }
 })

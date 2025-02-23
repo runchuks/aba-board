@@ -3,12 +3,13 @@ import useTranslation from "@/localization"
 import { LANGS } from "@/localization/constants"
 import { setLang, setMasterPin, setSpeechLang, setSpeechSpeed, setLocked } from "@/store/slices/global"
 import { useCallback, useEffect, useState } from "react"
-import { Text, TextInput, View } from "react-native"
+import { Button, Text, TextInput, View } from "react-native"
 import { Dropdown } from "react-native-element-dropdown"
 import { useDispatch, useSelector } from "react-redux"
 import * as Speech from 'expo-speech'
 import Slider from '@react-native-community/slider';
 import Checkbox from 'expo-checkbox';
+import { useRouter } from "expo-router"
 
 const timeout = 1000;
 const maxAttempts = 5;
@@ -16,6 +17,7 @@ const maxAttempts = 5;
 const GeneralSettings = () => {
     const t = useTranslation()
     const dispatch = useDispatch()
+    const router = useRouter()
     const { lang, speechLang, speechSpeed, masterPin, locked } = useSelector((state) => state.global)
     const [availableLanguages, setAvailableLanguages] = useState<{ title: string, value: string }[]>([])
     const [innerSpeechSpeed, setInnerSpeechSpeed] = useState<number>(Number(speechSpeed))
@@ -123,6 +125,10 @@ const GeneralSettings = () => {
                     />
                 </View>
             </View>
+            {/* <Button
+                title="DB"
+                onPress={() => router.navigate('/dbadmin')}
+            /> */}
         </View>
     )
 }
