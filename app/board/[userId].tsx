@@ -1,5 +1,5 @@
 import { useLocalSearchParams, useNavigation, useRouter } from "expo-router";
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { LayoutRectangle, ScrollView, StyleSheet, Text, TouchableOpacity, View } from "react-native"
 import Ionicons from '@expo/vector-icons/Ionicons';
 import MaterialCommunityIcons from '@expo/vector-icons/MaterialCommunityIcons';
@@ -10,15 +10,16 @@ import { Group } from "@/types";
 import CardColumn from "@/components/CardColumn";
 import Feather from '@expo/vector-icons/Feather';
 import { useDispatch, useSelector } from "react-redux";
-import { setItems } from "@/store/slices/global";
+import { setItems, setLastDragged } from "@/store/slices/global";
 import speak from "@/speak";
 import MaterialIcons from '@expo/vector-icons/MaterialIcons';
-import { DEFAULT_READ_LINE_HEIGHT, GROUP_HEIGHT, MAX_CARD_SIZE } from "@/constants/global";
+import { DEFAULT_READ_LINE_HEIGHT, GROUP_HEIGHT, MAX_CARD_SIZE, MIN_CARD_SIZE } from "@/constants/global";
+import AntDesign from '@expo/vector-icons/AntDesign';
 
 const windowHeight = Dimensions.get('window').height;
 const windowWidth = Dimensions.get('window').width;
 
-const COLUMN_HEIGHT = windowHeight - GROUP_HEIGHT - DEFAULT_READ_LINE_HEIGHT - 50;
+// const COLUMN_HEIGHT = windowHeight - GROUP_HEIGHT - DEFAULT_READ_LINE_HEIGHT - 50;
 
 const Board = () => {
     const { userId } = useLocalSearchParams()
@@ -42,11 +43,17 @@ const Board = () => {
 
     const insideCards = useRef<Record<number, number | null>>({});
 
+    const [readLineHeight, setReadLineHeight] = useState(DEFAULT_READ_LINE_HEIGHT)
+
     const [cardSize, setCardSize] = useState<number>(0);
 
     const activeGroup = useMemo(() => {
         return groups.find(({ id }) => id === activeGroupId) || null
     }, [activeGroupId, groups])
+
+    const columnHeight = useMemo(() => {
+        return windowHeight - GROUP_HEIGHT - readLineHeight - 50;
+    }, [readLineHeight])
 
     const bacgroundColor = useMemo(() => {
         const g = groups.find(({ id }) => id === activeGroupId)
@@ -150,7 +157,7 @@ const Board = () => {
         }
     }, [autoSpeak, currentText, lang])
 
-    const calculateAreaDifference = (
+    const calculateAreaDifference = useCallback((
         cardSize: number,
         columnWidth: number,
         columnHeight: number,
@@ -165,10 +172,9 @@ const Board = () => {
             return calculateAreaDifference(cardSize - 10, columnWidth, columnHeight, maxCardCount)
         }
         return cardSize;
-    }
+    }, [])
 
     useEffect(() => {
-        ///list optiomal size calculation
 
         let maxCardCount = 0;
         let maxColumnCount = 0;
@@ -184,19 +190,25 @@ const Board = () => {
             })
         })
 
-        console.log({ maxCardCount, maxColumnCount })
-
         const columnWidth = windowWidth / maxColumnCount;
 
         let tempCardSize = MAX_CARD_SIZE;
 
         if (maxCardCount > 0) {
-            const calculatedCardSize = calculateAreaDifference(tempCardSize, columnWidth, COLUMN_HEIGHT, maxCardCount);
-            setCardSize(calculatedCardSize)
-            console.log('cardSize', calculatedCardSize)
+            const calculatedCardSize = calculateAreaDifference(tempCardSize, columnWidth, columnHeight, maxCardCount);
+            if (calculatedCardSize > readLineHeight) {
+                setReadLineHeight(readLineHeight + 10)
+                return;
+            }
+            if (calculatedCardSize >= MIN_CARD_SIZE) {
+                setCardSize(calculatedCardSize)
+            } else {
+                setCardSize(MIN_CARD_SIZE)
+            }
+
         }
 
-    }, [groups])
+    }, [groups, columnHeight, readLineHeight, calculateAreaDifference])
 
     const renderGroupItems = useMemo<React.ReactNode>(() => {
         if (!cardSize) return null;
@@ -216,7 +228,7 @@ const Board = () => {
             return (
                 <View style={{
                     position: "absolute",
-                    height: COLUMN_HEIGHT,
+                    height: columnHeight,
                     width: windowWidth,
                     flexDirection: "row",
                 }} key={g.id}>
@@ -242,7 +254,7 @@ const Board = () => {
                 </TouchableOpacity>
             </View>
             <View style={style.boardWrap}>
-                <View style={[style.board, { backgroundColor: bacgroundColor }]}>
+                <View style={[style.board, { backgroundColor: bacgroundColor, height: columnHeight }]}>
                     {renderGroupItems}
                 </View>
                 <View>
@@ -259,9 +271,14 @@ const Board = () => {
                             )
                         )}
                     </ScrollView>
-
                 </View>
-                <View style={[style.readLine, { height: DEFAULT_READ_LINE_HEIGHT }]} ref={dropZoneRef}>
+                <View style={[style.readLine, { height: readLineHeight }]} ref={dropZoneRef}>
+                    <View style={style.arrowWrap}>
+                        <View style={style.arrow} />
+                        <View style={style.arrowHead}>
+                            <AntDesign name="caretright" size={25} color='rgb(182, 182, 182)' />
+                        </View>
+                    </View>
                     <View style={style.readLineControls}>
                         <TouchableOpacity onPress={() => setAutoSpeak(!autoSpeak)} style={{ alignItems: "center" }}>
                             <MaterialIcons name="auto-mode" size={24} color={autoSpeak ? 'blue' : 'black'} />
@@ -301,11 +318,11 @@ const style = StyleSheet.create({
         overflow: 'visible'
     },
     board: {
-        height: COLUMN_HEIGHT,
         flexDirection: "row",
     },
     readLine: {
         flex: 1,
+        position: 'relative'
     },
     readLineControls: {
         position: "absolute",
@@ -316,6 +333,28 @@ const style = StyleSheet.create({
         alignItems: "center",
         justifyContent: "flex-start",
         gap: 10,
+    },
+    arrowWrap: {
+        position: 'absolute',
+        width: '80%',
+        top: '40%',
+        left: '5%',
+        height: 24
+    },
+    arrow: {
+        position: 'absolute',
+        height: 5,
+        width: '100%',
+        top: 10,
+        left: 0,
+        backgroundColor: 'rgb(182, 182, 182)'
+    },
+    arrowHead: {
+        position: 'absolute',
+        width: 24,
+        height: 24,
+        right: -10,
+        top: 0
     }
 })
 

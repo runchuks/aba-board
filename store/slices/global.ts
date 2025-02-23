@@ -11,7 +11,8 @@ const initialState = {
     items: {},
     speechLang: SecureStore.getItem('speechLang') || DEFAULT_LANG,
     speechSpeed: Number(SecureStore.getItem('speechSpeed')) || DEFAULT_SPPECH_SPEED,
-    locked: Boolean(Number(SecureStore.getItem('locked'))) || DEFAULT_LOCKED
+    locked: Boolean(Number(SecureStore.getItem('locked'))) || DEFAULT_LOCKED,
+    lastDragged: null
 } as GlobalState
 
 const globalSlice = createSlice({
@@ -19,27 +20,31 @@ const globalSlice = createSlice({
   initialState,
   reducers: {
     setLang: (state, action: PayloadAction<LANG>) => {
-        SecureStore.setItem('lang', action.payload)
-        state.lang = action.payload;
+      SecureStore.setItem('lang', action.payload)
+      state.lang = action.payload;
     },
     setItems: (state, action: PayloadAction<Record<number, Item>>) => {
       state.items = action.payload
     },
     setSpeechLang: (state, action: PayloadAction<string>) => {
-        SecureStore.setItem('speechLang', action.payload)
-        state.speechLang = action.payload;
+      SecureStore.setItem('speechLang', action.payload)
+      state.speechLang = action.payload;
     },
     setSpeechSpeed: (state, action: PayloadAction<number>) => {
-        SecureStore.setItem('speechSpeed', action.payload.toString())
-        state.speechSpeed = action.payload;
+      SecureStore.setItem('speechSpeed', action.payload.toString())
+      state.speechSpeed = action.payload;
     },
     setMasterPin: (state, action: PayloadAction<string>) => {
-        SecureStore.setItem('masterPin', action.payload)
-        state.masterPin = action.payload
+      SecureStore.setItem('masterPin', action.payload)
+      state.masterPin = action.payload
     },
     setLocked: (state, action: PayloadAction<boolean>) => {
-        SecureStore.setItem('locked', action.payload ? '1' : '0')
-        state.locked = action.payload
+      SecureStore.setItem('locked', action.payload ? '1' : '0')
+      state.locked = action.payload
+    },
+    setLastDragged: (state, action: PayloadAction<number | null>) => {
+      console.log('las dragged', action.payload)
+      state.lastDragged = action.payload
     }
   },
 });
@@ -51,5 +56,6 @@ export const {
   setSpeechSpeed,
   setMasterPin,
   setLocked,
+  setLastDragged,
 } = globalSlice.actions;
 export default globalSlice.reducer;

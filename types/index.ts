@@ -14,6 +14,7 @@ export interface GlobalState {
     speechLang: string
     speechSpeed: number
     locked: boolean
+    lastDragged: number | null
 }
 
 export interface User {

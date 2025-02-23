@@ -1,5 +1,7 @@
+import { setLastDragged } from '@/store/slices/global';
 import React, { FC, useEffect, useRef, useState } from 'react';
 import { View, StyleSheet, PanResponder, Animated, Text, ImageBackground } from 'react-native';
+import { useDispatch, useSelector } from 'react-redux';
 
 interface Props {
   id: number
@@ -15,6 +17,8 @@ interface Props {
 }
 
 const Card: FC<Props> = ({ id, name, onDrag, onDrop, display, index, left, top, cardSize, image }) => {
+  const { lastDragged } = useSelector(state => state.global)
+  const dispatch = useDispatch()
   const position = useRef(new Animated.ValueXY()).current;
   const [dragging, setDragging] = useState(false);
 
@@ -38,6 +42,7 @@ const Card: FC<Props> = ({ id, name, onDrag, onDrop, display, index, left, top, 
         position.setValue({ x: 0, y: 0 });
         setDragging(true);
         dragged.current = true;
+        dispatch(setLastDragged(id));
       },
       onPanResponderMove: Animated.event([null, { dx: position.x, dy: position.y }], {
         useNativeDriver: false,
@@ -66,19 +71,23 @@ const Card: FC<Props> = ({ id, name, onDrag, onDrop, display, index, left, top, 
           width: cardSize,
           height: cardSize,
           transform: position.getTranslateTransform(),
-          opacity: dragging ? 0.8 : 1,
           display: display ? 'flex' : 'none',
           left,
           top,
-        },
+          zIndex: dragging || lastDragged === id ? 10 : 1
+        }
       ]}
       {...panResponder.panHandlers}
     >
-      <View style={[style.innerWrap, {
-        width: cardSize - 20,
-        height: cardSize - 20,
-        backgroundColor: image ? 'rgba(126, 126, 126, 0.55)' : '#fff',
-      }]}>
+      <View style={[
+        style.innerWrap,
+        {
+          width: cardSize - 20,
+          height: cardSize - 20,
+          backgroundColor: image ? 'rgba(126, 126, 126, 0.55)' : '#fff',
+        },
+        dragging && style.dragging
+      ]}>
         <ImageBackground
           source={{ uri: image || undefined }}
           style={{ width: '100%', height: '100%' }}
@@ -86,16 +95,18 @@ const Card: FC<Props> = ({ id, name, onDrag, onDrop, display, index, left, top, 
 
         >
           <View
-            style={{
-              backgroundColor: image ? 'rgba(255, 255, 255, 0.57)' : 'transparent',
-              width: cardSize - 20,
-              height: image ? 20 : cardSize - 20,
-              justifyContent: 'center',
-              alignItems: 'center',
-              position: 'absolute',
-              bottom: 0,
-              left: 0
-            }}
+            style={[
+              {
+                backgroundColor: image ? 'rgba(255, 255, 255, 0.57)' : 'transparent',
+                width: cardSize - 20,
+                height: image ? 20 : cardSize - 20,
+                justifyContent: 'center',
+                alignItems: 'center',
+                position: 'absolute',
+                bottom: 0,
+                left: 0
+              }
+            ]}
           >
             <Text
               adjustsFontSizeToFit={true}
@@ -115,7 +126,6 @@ const style = StyleSheet.create({
   wrap: {
     justifyContent: 'center',
     alignItems: 'center',
-    zIndex: 1,
     position: 'absolute',
   },
   innerWrap: {
@@ -125,11 +135,13 @@ const style = StyleSheet.create({
     alignItems: 'center',
     borderColor: 'rgba(126, 126, 126, 0.55)',
     overflow: 'hidden',
+  },
+  dragging: {
     shadowColor: '#000',
     shadowOffset: { width: -2, height: 4 },
     shadowOpacity: 1,
     shadowRadius: 3,
-    elevation: 10,
+    elevation: 20,
   },
   text: {
     fontSize: 14,
