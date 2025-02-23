@@ -6,19 +6,17 @@ import Card from "./Card"
 
 interface Props {
     ids: number[]
-    onDrag: (id: number, x: number) => void;
+    onDrag: (id: number, x: number, y: number) => void;
     onDrop: (id: number) => void
     display: boolean
     activeCards: number[]
+    cardSize: number
+    last: booleam
 }
 
-const minCardSize = 100
-const maxCardSize = 200
-
-const CardColumn: FC<Props> = ({ ids, onDrag, onDrop, display, activeCards }) => {
+const CardColumn: FC<Props> = ({ ids, onDrag, onDrop, display, activeCards, cardSize, last }) => {
     const [items, setItems] = useState<Item[]>([])
     const [dimensions, setDimensions] = useState({ width: 0, height: 0 })
-    const [cardSize, setCardSize] = useState(minCardSize)
 
     const getItems = () => {
         STORAGE.getItemsByIds(ids).then(values => {
@@ -34,11 +32,6 @@ const CardColumn: FC<Props> = ({ ids, onDrag, onDrop, display, activeCards }) =>
         setItems([])
         getItems()
     }, [])
-
-
-    useEffect(() => {
-        console.log('card size', cardSize)
-    }, [cardSize])
 
     const handleLayout = (event: any) => {
         const { width, height } = event.nativeEvent.layout
@@ -79,7 +72,7 @@ const CardColumn: FC<Props> = ({ ids, onDrag, onDrop, display, activeCards }) =>
     }, [items, dimensions.width, cardSize, onDrag, onDrop, activeCards, display])
 
     return (
-        <View style={style.wrap} onLayout={handleLayout}>
+        <View style={[style.wrap, last && style.last]} onLayout={handleLayout}>
             {renderCards}
         </View>
     )
@@ -91,7 +84,12 @@ const style = StyleSheet.create({
         height: '100%',
         padding: 20,
         gap: 10,
-        position: 'relative' // Ensure the wrap is the relative container
+        position: 'relative',
+        borderRightWidth: 1,
+        borderRightColor: 'rgba(0,0,0,.1)',
+    },
+    last: {
+        borderRightWidth: 0
     },
     cardWrap: {
         width: 100,

@@ -32,10 +32,11 @@ const GeneralSettings = () => {
                     }))
                     .filter(language => language.name === lang)
                 setAvailableLanguages(languages)
-                if (languages.length) {
+
+                const isCurrentLang = languages.find(language => language.value === speechLang)
+
+                if (!isCurrentLang) {
                     dispatch(setSpeechLang(languages[0].value))
-                } else {
-                    dispatch(setSpeechLang(''))
                 }
             } else {
                 if (time < maxAttempts) {

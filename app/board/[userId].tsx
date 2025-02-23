@@ -39,19 +39,19 @@ const Board = () => {
 
     const insideCards = useRef<Record<number, number | null>>({});
 
+    const [cardSize, setCardSize] = useState<number>(0);
+
 
     const activeGroup = useMemo(() => {
-        console.log({ activeGroupId })
         return groups.find(({ id }) => id === activeGroupId) || null
-    }, [activeGroupId])
+    }, [activeGroupId, groups])
 
     const bacgroundColor = useMemo(() => {
         const g = groups.find(({ id }) => id === activeGroupId)
         return g?.color || 'transparent'
-    }, [activeGroupId]);
+    }, [activeGroupId, groups]);
 
     const refreshBoard = async () => {
-        console.log('refreshing board')
         setActiveGroupId(null)
         setGroups([])
         setCurrentText('')
@@ -148,8 +148,45 @@ const Board = () => {
         }
     }, [autoSpeak, currentText, lang])
 
+    const calculateAreaDifference = (cardSize: number, columnArea: number, maxCardCount: number) => {
+        const cardTotalArea = (maxCardCount * 2) * (cardSize * cardSize);
+        if (cardTotalArea > columnArea) {
+            console.log('cardTotalArea', cardTotalArea)
+            console.log('columnArea', columnArea)
+
+            return calculateAreaDifference(cardSize - 1, columnArea, maxCardCount)
+        }
+        return cardSize;
+    }
+
+    useEffect(() => {
+        ///list optiomal size calculation
+        const columnHeight = windowHeight - 150 - 50;
+        const columnWidth = windowWidth / 3;
+        const columnArea = columnHeight * columnWidth;
+
+        let maxCardCount = 0;
+
+        groups.forEach(group => {
+            group.lists.forEach(list => {
+                if (list.length > maxCardCount) {
+                    maxCardCount = list.length
+                }
+            })
+        })
+
+        let tempCardSize = 300;
+
+        if (maxCardCount > 0) {
+            const calculatedCardSize = calculateAreaDifference(tempCardSize, columnArea, maxCardCount);
+            setCardSize(calculatedCardSize)
+            console.log('cardSize', calculatedCardSize)
+        }
+
+    }, [groups])
+
     const renderGroupItems = useMemo<React.ReactNode>(() => {
-        // const sg = groups.find(g => g.id === activeGroupId)
+        if (!cardSize) return null;
         return groups.map(g => {
             const colons = g.lists.map((ids, index) => (
                 <CardColumn
@@ -159,8 +196,9 @@ const Board = () => {
                     display={activeGroupId === g.id}
                     activeCards={insideIds}
                     key={index}
+                    cardSize={cardSize}
+                    last={index === g.lists.length - 1}
                 />
-                // <Text>{JSON.stringify(ids)}</Text>
             ))
             return (
                 <View style={{
@@ -173,16 +211,7 @@ const Board = () => {
                 </View>
             )
         })
-        // if (sg) {
-        //     console.log({ sg })
-        //     return sg.lists.map(ids => (
-        //         <CardColumn ids={ids} onDrag={handleDrag} onDrop={onDrop} />
-        //         // <Text>{JSON.stringify(ids)}</Text>
-        //     ))
-        // }
-
-        return []
-    }, [userId, activeGroupId, insideIds.length]);
+    }, [groups, activeGroupId, insideIds, cardSize]);
 
     return (
         <View style={{ height: '100%' }}>
