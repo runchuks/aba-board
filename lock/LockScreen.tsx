@@ -9,20 +9,21 @@ interface Props {
     setPin: (value: string) => void,
     handleUnlock: () => void,
     pin: string,
+    maxLenght: number
 }
 
-const LockScreen: React.FC<Props> = ({setPin, handleUnlock, pin}) => {
+const LockScreen: React.FC<Props> = ({ setPin, handleUnlock, pin, maxLenght }) => {
     const t = useTranslation()
 
     const maskedPin = useMemo(() => {
         const returnVals = [];
-        for (let i=0; i<pin.length; i++) {
+        for (let i = 0; i < pin.length; i++) {
             returnVals.push(
                 <Entypo name="dot-single" size={40} color="black" key={i} />
             )
         }
-        if (returnVals.length < 4) {
-            for (let i=returnVals.length; i<4; i++) {
+        if (returnVals.length < maxLenght) {
+            for (let i = returnVals.length; i < maxLenght; i++) {
                 returnVals.push(
                     <Entypo name="dot-single" size={40} color="#d6d6d6" key={i} />
                 )
@@ -32,13 +33,13 @@ const LockScreen: React.FC<Props> = ({setPin, handleUnlock, pin}) => {
     }, [pin])
 
     useEffect(() => {
-        if (pin.length === 4) {
+        if (pin.length === maxLenght) {
             handleUnlock()
         }
     }, [pin])
 
     const addToPin = (value: string) => {
-        if (pin.length < 4) {
+        if (pin.length < maxLenght) {
             setPin(pin + value);
         }
     }
@@ -130,6 +131,6 @@ const styles = StyleSheet.create({
         backgroundColor: "#c2c2c2",
         borderRadius: 5,
     }
-  });
+});
 
 export default LockScreen

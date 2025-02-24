@@ -1,5 +1,5 @@
 import { useLocalSearchParams, useNavigation, useRouter } from "expo-router";
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { LayoutRectangle, ScrollView, StyleSheet, Text, TouchableOpacity, View } from "react-native"
 import Ionicons from '@expo/vector-icons/Ionicons';
 import MaterialCommunityIcons from '@expo/vector-icons/MaterialCommunityIcons';
@@ -10,12 +10,16 @@ import { Group } from "@/types";
 import CardColumn from "@/components/CardColumn";
 import Feather from '@expo/vector-icons/Feather';
 import { useDispatch, useSelector } from "react-redux";
-import { setItems } from "@/store/slices/global";
+import { setItems, setLastDragged } from "@/store/slices/global";
 import speak from "@/speak";
 import MaterialIcons from '@expo/vector-icons/MaterialIcons';
+import { DEFAULT_READ_LINE_HEIGHT, GROUP_HEIGHT, MAX_CARD_SIZE, MIN_CARD_SIZE } from "@/constants/global";
+import AntDesign from '@expo/vector-icons/AntDesign';
 
 const windowHeight = Dimensions.get('window').height;
 const windowWidth = Dimensions.get('window').width;
+
+// const COLUMN_HEIGHT = windowHeight - GROUP_HEIGHT - DEFAULT_READ_LINE_HEIGHT - 50;
 
 const Board = () => {
     const { userId } = useLocalSearchParams()
@@ -39,19 +43,24 @@ const Board = () => {
 
     const insideCards = useRef<Record<number, number | null>>({});
 
+    const [readLineHeight, setReadLineHeight] = useState(DEFAULT_READ_LINE_HEIGHT)
+
+    const [cardSize, setCardSize] = useState<number>(0);
 
     const activeGroup = useMemo(() => {
-        console.log({ activeGroupId })
         return groups.find(({ id }) => id === activeGroupId) || null
-    }, [activeGroupId])
+    }, [activeGroupId, groups])
+
+    const columnHeight = useMemo(() => {
+        return windowHeight - GROUP_HEIGHT - readLineHeight - 50;
+    }, [readLineHeight])
 
     const bacgroundColor = useMemo(() => {
         const g = groups.find(({ id }) => id === activeGroupId)
         return g?.color || 'transparent'
-    }, [activeGroupId]);
+    }, [activeGroupId, groups]);
 
     const refreshBoard = async () => {
-        console.log('refreshing board')
         setActiveGroupId(null)
         setGroups([])
         setCurrentText('')
@@ -148,8 +157,61 @@ const Board = () => {
         }
     }, [autoSpeak, currentText, lang])
 
+    const calculateAreaDifference = useCallback((
+        cardSize: number,
+        columnWidth: number,
+        columnHeight: number,
+        maxCardCount: number,
+    ) => {
+        const maxCountInColumnY = Math.floor(columnHeight / cardSize);
+        const maxCountInColumnX = Math.floor(columnWidth / cardSize);
+        const maxCountTotal = maxCountInColumnX * maxCountInColumnY;
+
+        if (maxCardCount > maxCountTotal) {
+
+            return calculateAreaDifference(cardSize - 10, columnWidth, columnHeight, maxCardCount)
+        }
+        return cardSize;
+    }, [])
+
+    useEffect(() => {
+
+        let maxCardCount = 0;
+        let maxColumnCount = 0;
+
+        groups.forEach(group => {
+            if (group.lists.length > maxColumnCount) {
+                maxColumnCount = group.lists.length
+            }
+            group.lists.forEach(list => {
+                if (list.length > maxCardCount) {
+                    maxCardCount = list.length
+                }
+            })
+        })
+
+        const columnWidth = windowWidth / maxColumnCount;
+
+        let tempCardSize = MAX_CARD_SIZE;
+
+        if (maxCardCount > 0) {
+            const calculatedCardSize = calculateAreaDifference(tempCardSize, columnWidth, columnHeight, maxCardCount);
+            if (calculatedCardSize > readLineHeight) {
+                setReadLineHeight(readLineHeight + 10)
+                return;
+            }
+            if (calculatedCardSize >= MIN_CARD_SIZE) {
+                setCardSize(calculatedCardSize)
+            } else {
+                setCardSize(MIN_CARD_SIZE)
+            }
+
+        }
+
+    }, [groups, columnHeight, readLineHeight, calculateAreaDifference])
+
     const renderGroupItems = useMemo<React.ReactNode>(() => {
-        // const sg = groups.find(g => g.id === activeGroupId)
+        if (!cardSize) return null;
         return groups.map(g => {
             const colons = g.lists.map((ids, index) => (
                 <CardColumn
@@ -159,13 +221,14 @@ const Board = () => {
                     display={activeGroupId === g.id}
                     activeCards={insideIds}
                     key={index}
+                    cardSize={cardSize}
+                    last={index === g.lists.length - 1}
                 />
-                // <Text>{JSON.stringify(ids)}</Text>
             ))
             return (
                 <View style={{
                     position: "absolute",
-                    height: windowHeight - 150 - 50,
+                    height: columnHeight,
                     width: windowWidth,
                     flexDirection: "row",
                 }} key={g.id}>
@@ -173,19 +236,14 @@ const Board = () => {
                 </View>
             )
         })
-        // if (sg) {
-        //     console.log({ sg })
-        //     return sg.lists.map(ids => (
-        //         <CardColumn ids={ids} onDrag={handleDrag} onDrop={onDrop} />
-        //         // <Text>{JSON.stringify(ids)}</Text>
-        //     ))
-        // }
+    }, [groups, activeGroupId, insideIds, cardSize]);
 
-        return []
-    }, [userId, activeGroupId, insideIds.length]);
+    const restartBoard = () => {
+        refreshBoard()
+    }
 
     return (
-        <View>
+        <View style={{ height: '100%' }}>
             <View style={[style.head, { backgroundColor: bacgroundColor }]}>
                 <TouchableOpacity onPress={goBack} style={style.headBtn}>
                     <Ionicons name="arrow-back-outline" size={24} color="black" />
@@ -196,7 +254,7 @@ const Board = () => {
                 </TouchableOpacity>
             </View>
             <View style={style.boardWrap}>
-                <View style={[style.board, { backgroundColor: bacgroundColor }]}>
+                <View style={[style.board, { backgroundColor: bacgroundColor, height: columnHeight }]}>
                     {renderGroupItems}
                 </View>
                 <View>
@@ -213,16 +271,24 @@ const Board = () => {
                             )
                         )}
                     </ScrollView>
-
                 </View>
-                <View style={style.readLine} ref={dropZoneRef}>
+                <View style={[style.readLine, { height: readLineHeight }]} ref={dropZoneRef}>
+                    <View style={style.arrowWrap}>
+                        <View style={style.arrow} />
+                        <View style={style.arrowHead}>
+                            <AntDesign name="caretright" size={25} color='rgb(182, 182, 182)' />
+                        </View>
+                    </View>
                     <View style={style.readLineControls}>
                         <TouchableOpacity onPress={() => setAutoSpeak(!autoSpeak)} style={{ alignItems: "center" }}>
                             <MaterialIcons name="auto-mode" size={24} color={autoSpeak ? 'blue' : 'black'} />
                             <Text style={{ fontSize: 7 }}>Auto: {autoSpeak ? 'on' : 'off'}</Text>
                         </TouchableOpacity>
                         <TouchableOpacity onPress={repeatSpeak}>
-                            <Feather name="volume-2" size={30} color="black" />
+                            <Feather name="volume-2" size={24} color="black" />
+                        </TouchableOpacity>
+                        <TouchableOpacity onPress={restartBoard}>
+                            <MaterialIcons name="restart-alt" size={24} color="black" />
                         </TouchableOpacity>
                     </View>
                 </View>
@@ -242,32 +308,53 @@ const style = StyleSheet.create({
         padding: 10,
     },
     boardWrap: {
-
+        flex: 1
     },
     groups: {
-        height: 40,
+        height: GROUP_HEIGHT,
         flexDirection: "row",
-        backgroundColor: "grey",
         gap: 5,
+        marginTop: -.5,
+        overflow: 'visible'
     },
     board: {
-        height: windowHeight - 150 - 50,
         flexDirection: "row",
-        marginRight: -200
     },
     readLine: {
-        height: 145,
-        backgroundColor: "grey",
-        position: "relative"
+        flex: 1,
+        position: 'relative'
     },
     readLineControls: {
         position: "absolute",
         top: 0,
         right: 0,
         width: 50,
-        height: 145,
+        height: '100%',
         alignItems: "center",
-        justifyContent: "space-around",
+        justifyContent: "flex-start",
+        gap: 10,
+    },
+    arrowWrap: {
+        position: 'absolute',
+        width: '80%',
+        top: '40%',
+        left: '5%',
+        height: 24
+    },
+    arrow: {
+        position: 'absolute',
+        height: 5,
+        width: '100%',
+        top: 10,
+        left: 0,
+        backgroundColor: 'rgb(182, 182, 182)'
+    },
+    arrowHead: {
+        position: 'absolute',
+        width: 24,
+        height: 24,
+        right: -10,
+        top: 0
     }
 })
 

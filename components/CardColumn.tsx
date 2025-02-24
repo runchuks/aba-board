@@ -6,15 +6,15 @@ import Card from "./Card"
 
 interface Props {
     ids: number[]
-    onDrag: (id: number, x: number) => void;
+    onDrag: (id: number, x: number, y: number) => void;
     onDrop: (id: number) => void
     display: boolean
     activeCards: number[]
+    cardSize: number
+    last: boolean
 }
 
-const cardSize = 100
-
-const CardColumn: FC<Props> = ({ ids, onDrag, onDrop, display, activeCards }) => {
+const CardColumn: FC<Props> = ({ ids, onDrag, onDrop, display, activeCards, cardSize, last }) => {
     const [items, setItems] = useState<Item[]>([])
     const [dimensions, setDimensions] = useState({ width: 0, height: 0 })
 
@@ -36,6 +36,10 @@ const CardColumn: FC<Props> = ({ ids, onDrag, onDrop, display, activeCards }) =>
     const handleLayout = (event: any) => {
         const { width, height } = event.nativeEvent.layout
         setDimensions({ width, height })
+
+        // const cardsPerRow = Math.floor(width / minCardSize)
+        // const optimalCardSize = Math.min(maxCardSize, Math.floor(width / cardsPerRow))
+        // setCardSize(optimalCardSize)
     }
 
     const renderCards = useMemo<React.ReactNode>(() => {
@@ -65,10 +69,10 @@ const CardColumn: FC<Props> = ({ ids, onDrag, onDrop, display, activeCards }) =>
             })
         }
         return []
-    }, [items, dimensions.width, onDrag, onDrop, activeCards, display])
+    }, [items, dimensions.width, cardSize, onDrag, onDrop, activeCards, display])
 
     return (
-        <View style={style.wrap} onLayout={handleLayout}>
+        <View style={[style.wrap, last && style.last]} onLayout={handleLayout}>
             {renderCards}
         </View>
     )
@@ -80,7 +84,12 @@ const style = StyleSheet.create({
         height: '100%',
         padding: 20,
         gap: 10,
-        position: 'relative' // Ensure the wrap is the relative container
+        position: 'relative',
+        borderRightWidth: 1,
+        borderRightColor: 'rgba(99,99,99,.05)',
+    },
+    last: {
+        borderRightWidth: 0
     },
     cardWrap: {
         width: 100,
