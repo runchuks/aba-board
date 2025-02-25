@@ -313,6 +313,7 @@ const style = StyleSheet.create({
         justifyContent: "space-between",
         alignItems: "center",
         height: 50,
+        paddingHorizontal: 40
     },
     headBtn: {
         padding: 10,

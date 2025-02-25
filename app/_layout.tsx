@@ -8,7 +8,8 @@ import { StatusBar } from "expo-status-bar";
 import { useEffect } from "react";
 import { GestureHandlerRootView } from "react-native-gesture-handler";
 import { Provider } from "react-redux";
-import { PaperProvider } from 'react-native-paper';
+import { Appbar, PaperProvider } from 'react-native-paper';
+import Header from "@/components/Header";
 
 export default function RootLayout() {
 
@@ -36,7 +37,11 @@ export default function RootLayout() {
           <StatusBar
             hidden
           />
-          <Stack />
+          <Stack
+            screenOptions={{
+              header: (props) => (<Header {...props} />)
+            }}
+          />
         </Provider>
       </GestureHandlerRootView>
     </PaperProvider>
