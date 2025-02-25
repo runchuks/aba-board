@@ -44,6 +44,8 @@ const EditItem: FC<Props> = ({
                 if (data?.uri) {
                     onImageChange(data.uri)
                 }
+            }).catch((e) => {
+                console.log('Error taking picture', e)
             })
         }
 
@@ -70,6 +72,7 @@ const EditItem: FC<Props> = ({
                                 ratio="1:1"
                                 enableTorch={cameraFlashEnabled}
                                 onCameraReady={() => setCameraReady(true)}
+                                onMountError={(e) => console.log('Camera error', e)}
                                 animateShutter={false}
                                 ref={camera}
                             />

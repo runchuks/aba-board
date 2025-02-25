@@ -12,6 +12,9 @@ export interface GlobalState {
     masterPin: string
     items: Record<number, Item>
     speechLang: string
+    speechSpeed: number
+    locked: boolean
+    lastDragged: number | null
 }
 
 export interface User {

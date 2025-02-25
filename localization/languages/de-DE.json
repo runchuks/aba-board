@@ -27,5 +27,13 @@
     "Reset board?": "Tafel zurücksetzen?",
     "Reset": "Zurücksetzen",
     "Edit board": "Tafel bearbeiten",
-    "New group": "Neue Gruppe"
+    "New group": "Neue Gruppe",
+    "Request camera permission": "Kameraberechtigung anfordern",
+    "Item name": "Artikelname",
+    "Save": "Speichern",
+    "Close": "Schließen",
+    "Speech Language": "Sprache der Rede",
+    "Speech speed": "Sprechgeschwindigkeit",
+    "Delete group?": "Gruppe löschen?",
+    "Group saved": "Gruppe gespeichert"
 }

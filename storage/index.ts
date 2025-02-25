@@ -207,7 +207,7 @@ const createStarterBoard = async (userId: number) => {
 
     const { lastInsertRowId: lastGroup1Inserted } = await db.runAsync(
       `INSERT INTO groups (name, color, lists) VALUES (?, ?, ?);`,
-      ['Group 1', '#65a8c7', JSON.stringify([])]
+      ['Group 1', '#65a8c7', JSON.stringify([[],[],[]])]
     );
     console.log("Group added successfully!", lastGroup1Inserted);
 
@@ -531,8 +531,73 @@ const enableForeignKeys = async () => {
 const migration = async () => {
 
 };
-  
-  
+
+const expectedSchema = {
+  users: [
+    { name: "id", type: "INTEGER", primaryKey: true, autoIncrement: true },
+    { name: "name", type: "TEXT" },
+    { name: "image", type: "TEXT" },
+    { name: "added", type: "INTEGER" },
+    { name: "advanced", type: "INTEGER", check: "CHECK (advanced IN (0,1))" },
+    { name: "archived", type: "INTEGER", check: "CHECK (archived IN (0,1))" },
+  ],
+  groups: [
+    { name: "id", type: "INTEGER", primaryKey: true, autoIncrement: true },
+    { name: "name", type: "TEXT" },
+    { name: "color", type: "TEXT" },
+    { name: "lists", type: "TEXT" },
+  ],
+  board: [
+    { name: "id", type: "INTEGER", primaryKey: true, autoIncrement: true },
+    { name: "userId", type: "INTEGER" },
+    { name: "added", type: "INTEGER" },
+    { name: "advanced", type: "INTEGER", check: "CHECK (advanced IN (0,1))" },
+    { name: "archived", type: "INTEGER", check: "CHECK (archived IN (0,1))" },
+  ],
+  board_groups: [
+    { name: "boardId", type: "INTEGER" },
+    { name: "groupId", type: "INTEGER" },
+  ],
+  items: [
+    { name: "id", type: "INTEGER", primaryKey: true, autoIncrement: true },
+    { name: "name", type: "TEXT" },
+    { name: "image", type: "TEXT" },
+    { name: "color", type: "TEXT" },
+    { name: "lang", type: "TEXT" },
+  ],
+};
+
+const checkDatabaseStructure = async () => {
+  const db = await getDatabase();
+
+  const missingColumns: Record<string, { name: string, type: string }[]> = {};
+
+  for (const [tableName, expectedColumns] of Object.entries(expectedSchema)) {
+    const result = await db.getAllAsync(`PRAGMA table_info(${tableName});`);
+    const existingColumns = result.map((row: any) => row.name);
+
+    const missing = expectedColumns
+      .filter((col) => !existingColumns.includes(col.name))
+      .map((col) => ({ name: col.name, type: col.type }));
+
+    if (missing.length > 0) {
+      missingColumns[tableName] = missing;
+    }
+  }
+
+  return missingColumns;
+};
+
+const addMissingColumns = async (missingColumns: Record<string, { name: string, type: string }[]>) => {
+  const db = await getDatabase();
+
+  for (const [tableName, columns] of Object.entries(missingColumns)) {
+    for (const column of columns) {
+      const sql = `ALTER TABLE ${tableName} ADD COLUMN ${column.name} ${column.type};`;
+      await db.execAsync(sql);
+    }
+  }
+};
 
 const STORAGE = {
   initDb,
@@ -556,6 +621,9 @@ const STORAGE = {
   getAllItemsAsRecord,
   deleteItemById,
   updateItemById,
+  checkDatabaseStructure,
+  addMissingColumns,
+  getDatabase,
 };
 
 export default STORAGE;

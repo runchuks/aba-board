@@ -2,7 +2,7 @@
   "expo": {
     "name": "aba-board",
     "slug": "aba-board",
-    "version": "1.0.0",
+    "version": "1.0.1",
     "orientation": "landscape",
     "icon": "./assets/images/icon.png",
     "scheme": "aba-board",
@@ -14,7 +14,7 @@
     "android": {
       "adaptiveIcon": {
         "foregroundImage": "./assets/images/adaptive-icon.png",
-        "backgroundColor": "#ffffff"
+        "backgroundColor": "#e3987d"
       },
       "permissions": [
         "android.permission.CAMERA",
@@ -67,6 +67,7 @@
       "eas": {
         "projectId": "3f58b5c8-3d95-4477-998d-02cb23ea2838"
       }
-    }
+    },
+    "owner": "veiss"
   }
 }

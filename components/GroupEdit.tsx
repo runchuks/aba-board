@@ -98,7 +98,8 @@ const GroupEdit: FC<Props> = ({
                         lists: JSON.stringify(newLists)
                     }).then(() => {
                         if (newImage) {
-                            const path = FileSystem.documentDirectory + `image-${itemId}.jpg`
+                            const now = Date.now()
+                            const path = FileSystem.documentDirectory + `image-${itemId}-${now}.jpg`
                             FileSystem.copyAsync({
                                 from: newImage,
                                 to: path
@@ -110,6 +111,9 @@ const GroupEdit: FC<Props> = ({
                                     handleCloseAddModal()
                                 })
                             })
+                        } else {
+                            onRefresh()
+                            handleCloseAddModal()
                         }
                     })
                 }
@@ -117,7 +121,8 @@ const GroupEdit: FC<Props> = ({
         } else if (editItemId !== null) {
 
             if (newImage) {
-                const path = FileSystem.documentDirectory + `image-${editItemId}.jpg`
+                const now = Date.now()
+                const path = FileSystem.documentDirectory + `image-${editItemId}-${now}.jpg`
 
                 FileSystem.getInfoAsync(path).then(({ exists }) => {
                     if (exists) {
@@ -130,6 +135,7 @@ const GroupEdit: FC<Props> = ({
                             }).then(() => {
                                 console.log('copied')
                                 STORAGE.updateItemById(editItemId, {
+                                    image: path,
                                     name: newItemName,
                                 }).then(() => {
                                     onRefresh()
@@ -320,9 +326,9 @@ const GroupEdit: FC<Props> = ({
             </View>
             <View style={style.listsWrap}>
                 {renderEditLists}
-                <TouchableOpacity style={style.addColumn}>
+                {/* <TouchableOpacity style={style.addColumn}>
                     <AntDesign name="plus" size={24} color="grey" />
-                </TouchableOpacity>
+                </TouchableOpacity> */}
             </View>
         </View>
     )

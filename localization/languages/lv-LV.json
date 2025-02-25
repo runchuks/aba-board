@@ -27,5 +27,13 @@
     "Reset board?": "Restartēt kartiņas?",
     "Reset": "Restartēt",
     "Edit board": "Rediģēt dēli",
-    "New group": " Jauna grupa"
+    "New group": " Jauna grupa",
+    "Request camera permission": "Pieprasīt kameras atļauju",
+    "Item name": "Vienības nosaukums",
+    "Save": "Saglabāt",
+    "Close": "Aizvērt",
+    "Speech Language": "Runas valoda",
+    "Speech speed": "Runas ātrums",
+    "Delete group?": "Dzēst grupu?",
+    "Group saved": "Grupa saglabāta"
 }
