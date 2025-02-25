@@ -15,6 +15,7 @@ import speak from "@/speak";
 import MaterialIcons from '@expo/vector-icons/MaterialIcons';
 import { DEFAULT_READ_LINE_HEIGHT, GROUP_HEIGHT, MAX_CARD_SIZE, MIN_CARD_SIZE } from "@/constants/global";
 import AntDesign from '@expo/vector-icons/AntDesign';
+import useTranslation from "@/localization";
 
 const windowHeight = Dimensions.get('window').height;
 const windowWidth = Dimensions.get('window').width;
@@ -25,6 +26,7 @@ const Board = () => {
     const { userId } = useLocalSearchParams()
     const navigation = useNavigation()
     const router = useRouter()
+    const t = useTranslation()
     const dispatch = useDispatch()
     const { items, lang } = useSelector(state => state.global)
 
@@ -46,6 +48,8 @@ const Board = () => {
     const [readLineHeight, setReadLineHeight] = useState(DEFAULT_READ_LINE_HEIGHT)
 
     const [cardSize, setCardSize] = useState<number>(0);
+
+    const [currentDraggedInside, setCurrentDraggedInside] = useState<number | null>(null)
 
     const activeGroup = useMemo(() => {
         return groups.find(({ id }) => id === activeGroupId) || null
@@ -109,14 +113,16 @@ const Board = () => {
         dropZoneRef.current?.measure((x, y, width, height, pageX, pageY) => {
             setLayout({ x: pageX, y: pageY, width, height });
         });
-    }, []);
+    }, [readLineHeight]);
 
     const handleDrag = (id: number, x: number, y: number) => {
         if (layout) {
             if (x >= layout.x && x <= layout.x + layout.width && y >= layout.y && y <= layout.y + layout.height) {
                 insideCards.current[id] = x
+                setCurrentDraggedInside(id)
             } else {
                 insideCards.current[id] = null
+                setCurrentDraggedInside(null)
             }
         }
     };
@@ -137,10 +143,9 @@ const Board = () => {
     }
 
     useEffect(() => {
-        console.log('inside ids', JSON.stringify(insideIds));
         let text = ''
         insideIds.forEach((itemId, index) => {
-            text = text + `${items[itemId].name}`
+            text = text + `${index === 0 ? items[itemId].name : items[itemId].name.toLowerCase()}`
             if (index + 1 === insideIds.length) {
                 text = text + '.'
             } else {
@@ -197,7 +202,7 @@ const Board = () => {
         if (maxCardCount > 0) {
             const calculatedCardSize = calculateAreaDifference(tempCardSize, columnWidth, columnHeight, maxCardCount);
             if (calculatedCardSize > readLineHeight) {
-                setReadLineHeight(readLineHeight + 10)
+                setReadLineHeight(readLineHeight + 20)
                 return;
             }
             if (calculatedCardSize >= MIN_CARD_SIZE) {
@@ -209,6 +214,10 @@ const Board = () => {
         }
 
     }, [groups, columnHeight, readLineHeight, calculateAreaDifference])
+
+    useEffect(() => {
+        console.log({ cardSize, readLineHeight })
+    }, [cardSize, readLineHeight])
 
     const renderGroupItems = useMemo<React.ReactNode>(() => {
         if (!cardSize) return null;
@@ -223,6 +232,7 @@ const Board = () => {
                     key={index}
                     cardSize={cardSize}
                     last={index === g.lists.length - 1}
+                    currentDraggedInside={currentDraggedInside}
                 />
             ))
             return (
@@ -236,7 +246,7 @@ const Board = () => {
                 </View>
             )
         })
-    }, [groups, activeGroupId, insideIds, cardSize]);
+    }, [groups, activeGroupId, insideIds, cardSize, currentDraggedInside]);
 
     const restartBoard = () => {
         refreshBoard()
@@ -282,7 +292,7 @@ const Board = () => {
                     <View style={style.readLineControls}>
                         <TouchableOpacity onPress={() => setAutoSpeak(!autoSpeak)} style={{ alignItems: "center" }}>
                             <MaterialIcons name="auto-mode" size={24} color={autoSpeak ? 'blue' : 'black'} />
-                            <Text style={{ fontSize: 7 }}>Auto: {autoSpeak ? 'on' : 'off'}</Text>
+                            <Text style={{ fontSize: 7 }}>{t('Auto')}: {autoSpeak ? 'on' : 'off'}</Text>
                         </TouchableOpacity>
                         <TouchableOpacity onPress={repeatSpeak}>
                             <Feather name="volume-2" size={24} color="black" />
@@ -322,7 +332,7 @@ const style = StyleSheet.create({
     },
     readLine: {
         flex: 1,
-        position: 'relative'
+        position: 'relative',
     },
     readLineControls: {
         position: "absolute",

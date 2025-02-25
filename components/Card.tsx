@@ -14,9 +14,10 @@ interface Props {
   top: number
   cardSize: number
   image: string
+  active: boolean
 }
 
-const Card: FC<Props> = ({ id, name, onDrag, onDrop, display, index, left, top, cardSize, image }) => {
+const Card: FC<Props> = ({ id, name, onDrag, onDrop, display, index, left, top, cardSize, image, active }) => {
   const { lastDragged } = useSelector(state => state.global)
   const dispatch = useDispatch()
   const position = useRef(new Animated.ValueXY()).current;
@@ -86,7 +87,8 @@ const Card: FC<Props> = ({ id, name, onDrag, onDrop, display, index, left, top, 
           height: cardSize - 20,
           backgroundColor: image ? 'rgba(126, 126, 126, 0.55)' : '#fff',
         },
-        dragging && style.dragging
+        dragging && style.dragging,
+        active && style.active
       ]}>
         <ImageBackground
           source={{ uri: image || undefined }}
@@ -149,6 +151,9 @@ const style = StyleSheet.create({
     fontWeight: 'bold',
     paddingHorizontal: 5,
   },
+  active: {
+    borderStyle: 'dashed'
+  }
 });
 
 export default Card;

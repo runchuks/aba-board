@@ -3,13 +3,13 @@ import useTranslation from "@/localization"
 import { LANGS } from "@/localization/constants"
 import { setLang, setMasterPin, setSpeechLang, setSpeechSpeed, setLocked } from "@/store/slices/global"
 import { useCallback, useEffect, useState } from "react"
-import { Button, Text, TextInput, View } from "react-native"
+import { Button, Text, View } from "react-native"
 import { Dropdown } from "react-native-element-dropdown"
 import { useDispatch, useSelector } from "react-redux"
 import * as Speech from 'expo-speech'
 import Slider from '@react-native-community/slider';
-import Checkbox from 'expo-checkbox';
 import { useRouter } from "expo-router"
+import { Modal, Portal, TextInput, Checkbox } from 'react-native-paper';
 
 const timeout = 1000;
 const maxAttempts = 5;
@@ -21,6 +21,9 @@ const GeneralSettings = () => {
     const { lang, speechLang, speechSpeed, masterPin, locked } = useSelector((state) => state.global)
     const [availableLanguages, setAvailableLanguages] = useState<{ title: string, value: string }[]>([])
     const [innerSpeechSpeed, setInnerSpeechSpeed] = useState<number>(Number(speechSpeed))
+
+    const [pinLocked, setPinLocked] = useState(locked)
+    const [showLanguageModal, setShowLanguageModal] = useState(false)
 
     const getVoices = useCallback((time: number) => {
         console.log('Getting voices: ', time)
@@ -55,8 +58,16 @@ const GeneralSettings = () => {
         getVoices(0)
     }, [getVoices])
 
+    useEffect(() => {
+        dispatch(setLocked(pinLocked))
+    }, [pinLocked])
+
     const handleSpeechSpeedChange = (value: number) => {
         dispatch(setSpeechSpeed(value))
+    }
+
+    const hideLanguageModal = () => {
+        setShowLanguageModal(false)
     }
 
     const speechDropdownDisabled = availableLanguages.length === 0
@@ -75,6 +86,11 @@ const GeneralSettings = () => {
                         dispatch(setLang(item.value))
                     }}
                     style={STYLES.dropdown}
+                />
+                <TextInput
+                    value={LANGS[lang].title}
+                    readOnly
+                    right={<TextInput.Icon icon="chevron-down" onPress={() => setShowLanguageModal(true)} />}
                 />
             </View>
             <View style={[STYLES.inputWrap, speechDropdownDisabled && STYLES.disabled]}>
@@ -111,17 +127,18 @@ const GeneralSettings = () => {
                     style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' }}
                 >
                     <Checkbox
-                        value={locked}
-                        onValueChange={val => dispatch(setLocked(val))}
-                        color={locked ? '#4630EB' : undefined}
-                        style={{ marginRight: 10 }}
+                        status={pinLocked ? 'checked' : 'unchecked'}
+                        onPress={() => {
+                            setPinLocked(!pinLocked);
+                        }}
                     />
                     <TextInput
-                        style={[STYLES.input, { flex: 1 }]}
+                        style={{ flex: 1 }}
                         value={masterPin}
                         onChangeText={value => dispatch(setMasterPin(value))}
                         keyboardType="number-pad"
                         keyboardAppearance="light"
+                        right={<TextInput.Icon icon="lock-outline" />}
                     />
                 </View>
             </View>
@@ -129,8 +146,24 @@ const GeneralSettings = () => {
                 title="DB"
                 onPress={() => router.navigate('/dbadmin')}
             /> */}
+
+            <Portal>
+                <Modal
+                    visible={showLanguageModal}
+                    onDismiss={hideLanguageModal}
+                    contentContainerStyle={containerStyle}
+                    style={{
+                        justifyContent: 'center',
+                        alignItems: 'center'
+                    }}
+                >
+                    <Text>Example Modal.  Click outside this area to dismiss.</Text>
+                </Modal>
+            </Portal>
         </View>
     )
 }
+
+const containerStyle = { backgroundColor: 'white', padding: 20, width: 400 };
 
 export default GeneralSettings

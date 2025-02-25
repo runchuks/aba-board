@@ -7,12 +7,14 @@ import { useEffect, useMemo, useState } from "react";
 import { RefreshControl, ScrollView, StyleSheet, View } from "react-native";
 import { useSelector } from "react-redux";
 import { User } from "@/types";
+import { useTheme } from 'react-native-paper';
 
 
 export default function Index() {
   const { lang } = useSelector(state => state.global)
   const navigation = useNavigation()
   const t = useTranslation()
+  const theme = useTheme();
 
   const [users, setUsers] = useState<User[]>([]);
   const [refreshing, setRefreshing] = useState(false);
@@ -49,14 +51,14 @@ export default function Index() {
   }, [navigation]);
 
   return (
-    <View>
+    <View style={{ backgroundColor: theme.colors.background, height: '100%' }}>
       <ScrollView
         style={style.scrollWrap}
         refreshControl={
           <RefreshControl refreshing={refreshing} onRefresh={refreshUsers} />
         }
       >
-        <View style={style.wrap}>
+        <View style={[style.wrap]}>
           {renderKids}
         </View>
       </ScrollView>
