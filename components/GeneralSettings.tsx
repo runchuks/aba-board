@@ -109,17 +109,7 @@ const GeneralSettings = () => {
             </View>
             <View style={STYLES.inputWrap}>
                 <Text style={STYLES.inputLabel}>{t('Speech speed')}: {innerSpeechSpeed}</Text>
-                <Slider
-                    style={{ width: 400, height: 40, padding: 0, margin: 0 }}
-                    minimumValue={0}
-                    lowerLimit={10}
-                    maximumValue={200}
-                    upperLimit={220}
-                    step={1}
-                    value={speechSpeed}
-                    onSlidingComplete={handleSpeechSpeedChange}
-                    onValueChange={setInnerSpeechSpeed}
-                />
+
             </View>
             <View style={STYLES.inputWrap}>
                 <Text style={STYLES.inputLabel}>{t('PIN')}</Text>

@@ -16,6 +16,8 @@ import MaterialIcons from '@expo/vector-icons/MaterialIcons';
 import { DEFAULT_READ_LINE_HEIGHT, GROUP_HEIGHT, MAX_CARD_SIZE, MIN_CARD_SIZE } from "@/constants/global";
 import AntDesign from '@expo/vector-icons/AntDesign';
 import useTranslation from "@/localization";
+import { RootState } from "@/store";
+import { Button, IconButton, ToggleButton, useTheme } from "react-native-paper";
 
 const windowHeight = Dimensions.get('window').height;
 const windowWidth = Dimensions.get('window').width;
@@ -28,7 +30,8 @@ const Board = () => {
     const router = useRouter()
     const t = useTranslation()
     const dispatch = useDispatch()
-    const { items, lang } = useSelector(state => state.global)
+    const theme = useTheme()
+    const { items, lang, voicesLoaded } = useSelector((state: RootState) => state.global)
 
     const [groups, setGroups] = useState<Group[]>([])
     const [activeGroupId, setActiveGroupId] = useState<number | null>(null)
@@ -154,7 +157,7 @@ const Board = () => {
         });
         console.log(text)
         setCurrentText(text)
-    }, [insideIds])
+    }, [insideIds, items])
 
     useEffect(() => {
         if (currentText && autoSpeak) {
@@ -255,20 +258,40 @@ const Board = () => {
     return (
         <View style={{ height: '100%' }}>
             <View style={[style.head, { backgroundColor: bacgroundColor }]}>
-                <TouchableOpacity onPress={goBack} style={style.headBtn}>
-                    <Ionicons name="arrow-back-outline" size={24} color="black" />
-                </TouchableOpacity>
+                <IconButton
+                    icon="arrow-left"
+                    onPress={goBack}
+                />
                 <Text>{activeGroup?.name}</Text>
-                <TouchableOpacity style={style.headBtn} onPress={goToEditMode}>
-                    <MaterialCommunityIcons name="pencil-outline" size={24} color="black" />
-                </TouchableOpacity>
+                <View
+                    style={{
+                        flexDirection: 'row'
+                    }}
+                >
+                    <IconButton
+                        icon="refresh"
+                        onPress={restartBoard}
+                    />
+                    <IconButton
+                        icon="pencil"
+                        onPress={goToEditMode}
+                    />
+                </View>
             </View>
             <View style={style.boardWrap}>
                 <View style={[style.board, { backgroundColor: bacgroundColor, height: columnHeight }]}>
                     {renderGroupItems}
                 </View>
                 <View>
-                    <ScrollView horizontal style={style.groups}>
+                    <ScrollView
+                        horizontal
+                        style={[
+                            style.groups,
+                            {
+                                backgroundColor: theme.colors.background
+                            }
+                        ]}
+                    >
                         {groups.map(
                             (group, index) => (
                                 <GroupSelector
@@ -282,24 +305,36 @@ const Board = () => {
                         )}
                     </ScrollView>
                 </View>
-                <View style={[style.readLine, { height: readLineHeight }]} ref={dropZoneRef}>
+                <View
+                    style={[
+                        style.readLine,
+                        {
+                            height: readLineHeight,
+                            backgroundColor: theme.colors.background
+                        }
+                    ]}
+                    ref={dropZoneRef}
+                >
                     <View style={style.arrowWrap}>
-                        <View style={style.arrow} />
+                        <View style={[style.arrow, { backgroundColor: theme.colors.primary }]} />
                         <View style={style.arrowHead}>
-                            <AntDesign name="caretright" size={25} color='rgb(182, 182, 182)' />
+                            <AntDesign name="caretright" size={25} color={theme.colors.primary} />
                         </View>
                     </View>
                     <View style={style.readLineControls}>
-                        <TouchableOpacity onPress={() => setAutoSpeak(!autoSpeak)} style={{ alignItems: "center" }}>
-                            <MaterialIcons name="auto-mode" size={24} color={autoSpeak ? 'blue' : 'black'} />
-                            <Text style={{ fontSize: 7 }}>{t('Auto')}: {autoSpeak ? 'on' : 'off'}</Text>
-                        </TouchableOpacity>
-                        <TouchableOpacity onPress={repeatSpeak}>
-                            <Feather name="volume-2" size={24} color="black" />
-                        </TouchableOpacity>
-                        <TouchableOpacity onPress={restartBoard}>
-                            <MaterialIcons name="restart-alt" size={24} color="black" />
-                        </TouchableOpacity>
+                        <ToggleButton
+                            icon="refresh-auto"
+                            value="refresh-auto"
+                            status={autoSpeak ? 'checked' : 'unchecked'}
+                            onPress={() => setAutoSpeak(!autoSpeak)}
+                            size={20}
+                            disabled={!voicesLoaded}
+                        />
+                        <IconButton
+                            icon="account-voice"
+                            onPress={repeatSpeak}
+                            disabled={!voicesLoaded}
+                        />
                     </View>
                 </View>
             </View>
@@ -338,8 +373,7 @@ const style = StyleSheet.create({
     readLineControls: {
         position: "absolute",
         top: 0,
-        right: 0,
-        width: 50,
+        right: 20,
         height: '100%',
         alignItems: "center",
         justifyContent: "flex-start",
@@ -358,7 +392,6 @@ const style = StyleSheet.create({
         width: '100%',
         top: 10,
         left: 0,
-        backgroundColor: 'rgb(182, 182, 182)'
     },
     arrowHead: {
         position: 'absolute',

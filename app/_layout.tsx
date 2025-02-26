@@ -5,15 +5,34 @@ import STORAGE from "@/storage";
 import { store } from "@/store";
 import { Stack } from "expo-router";
 import { StatusBar } from "expo-status-bar";
-import { useEffect } from "react";
+import { useEffect, useMemo } from "react";
 import { GestureHandlerRootView } from "react-native-gesture-handler";
 import { Provider } from "react-redux";
-import { Appbar, PaperProvider } from 'react-native-paper';
+import { MD3DarkTheme, MD3LightTheme, PaperProvider, useTheme } from 'react-native-paper';
 import Header from "@/components/Header";
+import * as SecureStore from 'expo-secure-store';
+import { useColorScheme } from "react-native";
 
 export default function RootLayout() {
+  const colorScheme = useColorScheme();
+  const schema = SecureStore.getItem('themeColorSchema')
 
-  const t = useTranslation();
+  console.log({ colorScheme, schema })
+
+  const paperTheme = useMemo(() => {
+    switch (schema) {
+      case 'auto':
+        if (colorScheme === 'dark') return MD3DarkTheme
+        if (colorScheme === 'light') return MD3LightTheme
+        return MD3LightTheme
+      case 'light':
+        return MD3LightTheme
+      case 'dark':
+        return MD3DarkTheme
+      default:
+        return MD3LightTheme
+    }
+  }, [colorScheme, schema])
 
   useEffect(() => {
     STORAGE.initDb();
@@ -31,7 +50,7 @@ export default function RootLayout() {
   }, [])
 
   return (
-    <PaperProvider>
+    <PaperProvider theme={{ ...paperTheme }}>
       <GestureHandlerRootView>
         <Provider store={store}>
           <StatusBar

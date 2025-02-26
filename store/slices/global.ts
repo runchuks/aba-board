@@ -11,8 +11,9 @@ const initialState = {
     items: {},
     speechLang: SecureStore.getItem('speechLang') || DEFAULT_LANG,
     speechSpeed: Number(SecureStore.getItem('speechSpeed')) || DEFAULT_SPPECH_SPEED,
-    locked: Boolean(Number(SecureStore.getItem('locked'))) || DEFAULT_LOCKED,
-    lastDragged: null
+    locked: SecureStore.getItem('locked') !== null ? Boolean(Number(SecureStore.getItem('locked'))) : DEFAULT_LOCKED,
+    lastDragged: null,
+    voicesLoaded: SecureStore.getItem('voicesLoaded') !== null ? Boolean(Number(SecureStore.getItem('voicesLoaded'))) : true,
 } as GlobalState
 
 const globalSlice = createSlice({
@@ -42,8 +43,12 @@ const globalSlice = createSlice({
       SecureStore.setItem('locked', action.payload ? '1' : '0')
       state.locked = action.payload
     },
+    setVoicesLoaded: (state, action: PayloadAction<boolean>) => {
+      console.log('voices loaded', action)
+      SecureStore.setItem('voicesLoaded', action.payload ? '1' : '0')
+      state.voicesLoaded = action.payload
+    },
     setLastDragged: (state, action: PayloadAction<number | null>) => {
-      console.log('las dragged', action.payload)
       state.lastDragged = action.payload
     }
   },
@@ -57,5 +62,6 @@ export const {
   setMasterPin,
   setLocked,
   setLastDragged,
+  setVoicesLoaded,
 } = globalSlice.actions;
 export default globalSlice.reducer;

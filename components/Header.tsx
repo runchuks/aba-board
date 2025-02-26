@@ -1,18 +1,14 @@
-import { useEffect } from "react"
 import { View } from "react-native";
 import { Appbar, Text } from "react-native-paper"
 
 const Header = (props) => {
-
-    useEffect(() => {
-        console.log(props)
-    })
 
     return (
         <Appbar.Header
             style={{
                 justifyContent: "space-between"
             }}
+            elevated
         >
             <View
                 style={{

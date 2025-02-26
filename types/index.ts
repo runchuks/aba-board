@@ -15,6 +15,7 @@ export interface GlobalState {
     speechSpeed: number
     locked: boolean
     lastDragged: number | null
+    voicesLoaded: boolean
 }
 
 export interface User {
@@ -70,4 +71,10 @@ export interface Board {
     advanced: boolean
     archived: boolean
     groups?: Group[]
+}
+
+export interface Language {
+    title: string,
+    translations: Record<string, string> | null,
+    value: LANG,
 }

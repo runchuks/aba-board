@@ -1,25 +1,24 @@
 import { FC } from "react"
-import { StyleSheet, TouchableOpacity, View } from "react-native"
-import AntDesign from '@expo/vector-icons/AntDesign';
+import { StyleSheet } from "react-native"
 import { useRouter } from "expo-router";
 import { User } from "@/types";
-import { useTheme, Text } from "react-native-paper";
+import { Text, Avatar, Card } from "react-native-paper";
 
 const UserCard: FC<User> = ({ id, name }) => {
     const router = useRouter()
-    const theme = useTheme();
 
     const onPress = () => {
         router.navigate(`/board/${id}`)
     }
 
     return (
-        <TouchableOpacity style={[style.wrap, { backgroundColor: theme.colors.primaryContainer }]} onPress={onPress} >
-            <View style={style.imageWrap}>
-                <AntDesign name="user" size={24} color="black" />
-            </View>
-            <Text style={style.name} numberOfLines={1}>{name}</Text>
-        </TouchableOpacity>
+        <Card style={style.wrap} onPress={onPress}>
+            <Avatar.Icon
+                icon="account-outline"
+                size={50}
+            />
+            <Text style={style.name} numberOfLines={1}>{name.trim()}</Text>
+        </Card>
     )
 }
 
@@ -27,10 +26,9 @@ const style = StyleSheet.create({
     wrap: {
         paddingVertical: 20,
         paddingHorizontal: 10,
-        borderWidth: 1,
         borderRadius: 5,
         alignItems: "center",
-        width: 200
+        width: 150,
     },
     imageWrap: {
         backgroundColor: "#dedede",
@@ -42,6 +40,7 @@ const style = StyleSheet.create({
         marginBottom: 20
     },
     name: {
+        marginTop: 10,
         fontSize: 18,
         fontWeight: "bold",
         textAlign: "center",

@@ -337,7 +337,8 @@ const GroupEdit: FC<Props> = ({
 const style = StyleSheet.create({
     wrap: {
         marginBottom: 10,
-        height: '100%'
+        flex: 1,
+        paddingBottom: 60
     },
     groupWrap: {
         borderWidth: 1,

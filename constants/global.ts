@@ -7,4 +7,6 @@ export const DEFAULT_SPPECH_SPEED = 100
 export const MAX_CARD_SIZE = 300
 export const MIN_CARD_SIZE = 80
 export const GROUP_HEIGHT = 40
-export const DEFAULT_READ_LINE_HEIGHT = MIN_CARD_SIZE 
+export const DEFAULT_READ_LINE_HEIGHT = MIN_CARD_SIZE
+export const VOICE_TIMEOUT = 1000
+export const VOICE_MAX_ATTEMPTS = 5

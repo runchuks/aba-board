@@ -35,5 +35,20 @@
     "Speech Language": "Runas valoda",
     "Speech speed": "Runas ātrums",
     "Delete group?": "Dzēst grupu?",
-    "Group saved": "Grupa saglabāta"
+    "Group saved": "Grupa saglabāta",
+    "Parental": "Vecākiem",
+    "Speech": "Runa",
+    "Edit group": "Rediģēt grupu",
+    "No voices loaded": "Nevar ielādēt balsis",
+    "Try again": "Mēģināt vēlreiz",
+    "Loading voices": "Ielādē balsis",
+    "Speak function will not work until voices are not loaded": "Runas funkcija nedarbosies, kamēr balsis nav ielādētas",
+    "Locked with PIN": "Bloķēts ar PIN",
+    "PIN": "PIN",
+    "Restart the application for theme settings to take effect": "Restartējiet lietotni, lai izskata iestatījumi stātos spēkā",
+    "Appearance": "Izskats",
+    "Automatic": "Automātiski",
+    "Current color scheme": "Pašreizējā krāsu shēma",
+    "Light": "Gaišs",
+    "Dark": "Tumšs"
 }
