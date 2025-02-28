@@ -1,3 +1,4 @@
+import AboutSettings from "@/components/AboutSettings";
 import GeneralSettings from "@/components/GeneralSettings";
 import KidsSettings from "@/components/KidsSettings";
 import LanguageSettings from "@/components/LanguageSettings";
@@ -6,6 +7,7 @@ import SpeechSettings from "@/components/SpeechSettings";
 import ThemeSettings from "@/components/ThemeSettings";
 import useTranslation from "@/localization";
 import useLock from "@/lock"
+import { RootState } from "@/store";
 import { useNavigation } from "expo-router";
 import { useEffect, useState } from "react";
 import { View, StyleSheet, ScrollView, TouchableOpacity } from "react-native"
@@ -36,11 +38,17 @@ const SETTINGS_TABS = [
         title: 'Appearance',
         icon: 'theme-light-dark',
         content: (): React.ReactNode => <ThemeSettings />
+    },
+    {
+        id: 5,
+        title: 'About',
+        icon: 'information-outline',
+        content: (): React.ReactNode => <AboutSettings />
     }
 ]
 
 const Settings = () => {
-    const { lang } = useSelector(state => state.global)
+    const { lang } = useSelector((state: RootState) => state.global)
     const { unlocked, LockScreen } = useLock();
     const navigation = useNavigation()
     const t = useTranslation()
@@ -50,7 +58,7 @@ const Settings = () => {
 
     useEffect(() => {
         navigation.setOptions({ title: t('Settings') });
-    }, [lang])
+    }, [lang, navigation, t])
 
     const tabTitles = SETTINGS_TABS.map((setting, index) => {
         return (
@@ -64,6 +72,7 @@ const Settings = () => {
                     backgroundColor: activeTab === setting.id ? theme.colors.elevation.level3 : 'transparent'
                 }}
                 onPress={() => setActiveTab(setting.id)}
+                key={index}
             >
                 <Icon size={24} source={setting.icon} />
                 <Text variant="labelLarge">{t(setting.title)}</Text>
@@ -80,6 +89,7 @@ const Settings = () => {
                 style={{
                     display: setting.id === activeTab ? 'flex' : 'none'
                 }}
+                key={index}
             >
                 {setting.content()}
             </View>
@@ -93,7 +103,6 @@ const Settings = () => {
 
     return (
         <View style={[style.wrap, { backgroundColor: theme.colors.background }]}>
-
             <View style={[style.tabsTitlesWrap, { backgroundColor: theme.colors.elevation.level1 }]}>
                 <ScrollView>
                     {tabTitles}
@@ -102,15 +111,6 @@ const Settings = () => {
             <View style={style.tebContentWrap}>
                 {tabContents}
             </View>
-
-            {/* <ScrollView style={{ width: '100%' }}>
-                <View style={{ alignItems: "center" }}>
-                    <View style={style.innerWrap}>
-                        <GeneralSettings />
-                        <KidsSettings />
-                    </View>
-                </View>
-            </ScrollView> */}
         </View>
     )
 }
@@ -119,6 +119,7 @@ const style = StyleSheet.create({
     wrap: {
         width: '100%',
         height: '100%',
+        paddingBottom: 65,
         flexDirection: 'row'
     },
     innerWrap: {

@@ -77,6 +77,7 @@ const LanguageSettings: FC = () => {
                         onPress={() => handleSpeechLangChange(voice.value)}
                     />
                 )}
+                key={voice.value}
             />
         ))
 
@@ -135,7 +136,6 @@ const style = StyleSheet.create({
     wrap: {
         width: '100%',
         height: '100%',
-        paddingBottom: 63
     }
 })
 
