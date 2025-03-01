@@ -16,6 +16,7 @@ export interface GlobalState {
     locked: boolean
     lastDragged: number | null
     voicesLoaded: boolean
+    editingGroup: number | null
 }
 
 export interface User {

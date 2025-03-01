@@ -2,32 +2,33 @@ import useTranslation from "@/localization";
 import STORAGE from "@/storage";
 import { FC, useEffect, useState } from "react";
 import { View } from "react-native";
-import { Modal, Text, TextInput, useTheme, Button } from "react-native-paper";
+import { Modal, useTheme, Button } from "react-native-paper";
+import ColorPicker, { HueSlider, Panel1, Preview } from "reanimated-color-picker";
 
 interface Props {
     id: number | null
     active: boolean
-    currentName: string | null
+    currentColor: string | null
     onClose: () => void
 }
 
-const EditGroupName: FC<Props> = ({ id, active, currentName, onClose }) => {
+const EditGroupColor: FC<Props> = ({ id, active, currentColor, onClose }) => {
     const theme = useTheme()
     const t = useTranslation()
 
-    const [name, setName] = useState('')
+    const [color, setColor] = useState('')
     const [loading, setLoading] = useState(false)
 
     useEffect(() => {
-        setName(currentName || '');
+        setColor(currentColor || '');
         setLoading(false)
-    }, [currentName])
+    }, [currentColor])
 
     const onSave = () => {
         if (id) {
             setLoading(true)
             STORAGE.updateGroupById(id, {
-                name
+                color
             }).then(() => {
                 onClose()
             })
@@ -35,7 +36,11 @@ const EditGroupName: FC<Props> = ({ id, active, currentName, onClose }) => {
 
     }
 
-    if (!active || !id || currentName === null) return null
+    const onSelectColor = ({ hex }: { hex: string }) => {
+        setColor(hex)
+    };
+
+    if (!active || !id || currentColor === null) return null
 
     return (
         <Modal
@@ -43,7 +48,7 @@ const EditGroupName: FC<Props> = ({ id, active, currentName, onClose }) => {
             onDismiss={onClose}
             contentContainerStyle={{
                 backgroundColor: theme.colors.background,
-                width: 300,
+                width: 500,
                 padding: 30,
                 borderRadius: theme.roundness
             }}
@@ -52,11 +57,13 @@ const EditGroupName: FC<Props> = ({ id, active, currentName, onClose }) => {
             }}
         >
 
-            <TextInput
-                label={t('Group name')}
-                value={name}
-                onChangeText={setName}
-            />
+            <ColorPicker style={{ width: '100%', maxHeight: '90%' }} value={currentColor} onComplete={onSelectColor}>
+                <Preview />
+                <View style={{ flexDirection: 'row', justifyContent: 'space-between', gap: 10 }}>
+                    <Panel1 style={{ marginVertical: 10, flex: 1 }} />
+                    <HueSlider style={{ marginVertical: 10 }} vertical />
+                </View>
+            </ColorPicker>
             <View
                 style={{
                     flexDirection: 'row',
@@ -91,4 +98,4 @@ const EditGroupName: FC<Props> = ({ id, active, currentName, onClose }) => {
     )
 }
 
-export default EditGroupName
+export default EditGroupColor

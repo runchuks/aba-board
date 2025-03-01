@@ -10,7 +10,7 @@ import { Group } from "@/types";
 import CardColumn from "@/components/CardColumn";
 import Feather from '@expo/vector-icons/Feather';
 import { useDispatch, useSelector } from "react-redux";
-import { setItems, setLastDragged } from "@/store/slices/global";
+import { setEditingGroup, setItems, setLastDragged } from "@/store/slices/global";
 import speak from "@/speak";
 import MaterialIcons from '@expo/vector-icons/MaterialIcons';
 import { DEFAULT_READ_LINE_HEIGHT, GROUP_HEIGHT, MAX_CARD_SIZE, MIN_CARD_SIZE } from "@/constants/global";
@@ -91,6 +91,10 @@ const Board = () => {
     useEffect(() => {
         refreshBoard()
     }, [])
+
+    useEffect(() => {
+        dispatch(setEditingGroup(activeGroupId))
+    }, [activeGroupId])
 
     useEffect(() => {
         navigation.setOptions({ header: () => null });

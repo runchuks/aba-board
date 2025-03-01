@@ -1,8 +1,9 @@
 import { Banner, HelperText, List, RadioButton, Text } from "react-native-paper"
 import * as SecureStore from 'expo-secure-store';
-import { useColorScheme, View } from "react-native";
+import { ScrollView, useColorScheme, View } from "react-native";
 import { useEffect, useRef, useState } from "react";
 import useTranslation from "@/localization";
+import { THEMES } from "@/constants/global";
 
 const ThemeSettings = () => {
 
@@ -23,16 +24,34 @@ const ThemeSettings = () => {
         firstRender.current = false
     }, [current])
 
+    const themesRender = THEMES.map(theme => (
+        <List.Item
+            title={t(theme.title)}
+            key={theme.value}
+            right={() => (
+                <RadioButton
+                    value={theme.value}
+                    status={current === theme.value ? 'checked' : 'unchecked'}
+                    onPress={() => setCurrent(theme.value)}
+                />
+            )}
+            onPress={() => setCurrent(theme.value)}
+        />
+    ))
+
     return (
-        <View>
+        <View
+            style={{
+                paddingBottom: showBanner ? 105 : 0
+
+            }}
+        >
             <Banner
                 visible={showBanner}
             >
                 {t('Restart the application for theme settings to take effect')}
             </Banner>
-            <List.Section
-                title="Theme"
-            >
+            <ScrollView>
                 <List.Item
                     title={() => (
                         <View>
@@ -51,29 +70,8 @@ const ThemeSettings = () => {
                     )}
                     onPress={() => setCurrent('auto')}
                 />
-                <List.Item
-                    title={t('Light')}
-                    right={() => (
-                        <RadioButton
-                            value="light"
-                            status={current === 'light' ? 'checked' : 'unchecked'}
-                            onPress={() => setCurrent('light')}
-                        />
-                    )}
-                    onPress={() => setCurrent('light')}
-                />
-                <List.Item
-                    title={t('Dark')}
-                    right={() => (
-                        <RadioButton
-                            value="dark"
-                            status={current === 'dark' ? 'checked' : 'unchecked'}
-                            onPress={() => setCurrent('dark')}
-                        />
-                    )}
-                    onPress={() => setCurrent('dark')}
-                />
-            </List.Section>
+                {themesRender}
+            </ScrollView>
         </View>
 
     )

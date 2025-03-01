@@ -14,6 +14,7 @@ const initialState = {
     locked: SecureStore.getItem('locked') !== null ? Boolean(Number(SecureStore.getItem('locked'))) : DEFAULT_LOCKED,
     lastDragged: null,
     voicesLoaded: SecureStore.getItem('voicesLoaded') !== null ? Boolean(Number(SecureStore.getItem('voicesLoaded'))) : true,
+    editingGroup: null
 } as GlobalState
 
 const globalSlice = createSlice({
@@ -50,6 +51,9 @@ const globalSlice = createSlice({
     },
     setLastDragged: (state, action: PayloadAction<number | null>) => {
       state.lastDragged = action.payload
+    },
+    setEditingGroup: (state, action: PayloadAction<number | null>) => {
+      state.editingGroup = action.payload
     }
   },
 });
@@ -63,5 +67,6 @@ export const {
   setLocked,
   setLastDragged,
   setVoicesLoaded,
+  setEditingGroup,
 } = globalSlice.actions;
 export default globalSlice.reducer;

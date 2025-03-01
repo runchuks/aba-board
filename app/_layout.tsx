@@ -13,6 +13,10 @@ import Header from "@/components/Header";
 import * as SecureStore from 'expo-secure-store';
 import { useColorScheme } from "react-native";
 
+import { Skyflare } from "@/themes/skyflare";
+import { Playful } from "@/themes/playful";
+import { Amoled } from "@/themes/amoled";
+
 export default function RootLayout() {
   const colorScheme = useColorScheme();
   const schema = SecureStore.getItem('themeColorSchema')
@@ -29,6 +33,41 @@ export default function RootLayout() {
         return MD3LightTheme
       case 'dark':
         return MD3DarkTheme
+      case 'skyflare-light':
+        return {
+          ...MD3LightTheme,
+          colors: {
+            ...Skyflare.light
+          }
+        }
+      case 'skyflare-dark':
+        return {
+          ...MD3DarkTheme,
+          colors: {
+            ...Skyflare.dark
+          }
+        }
+      case 'playful-light':
+        return {
+          ...MD3LightTheme,
+          colors: {
+            ...Playful.light
+          }
+        }
+      case 'playful-dark':
+        return {
+          ...MD3DarkTheme,
+          colors: {
+            ...Playful.dark
+          }
+        }
+      case 'amoled':
+        return {
+          ...MD3DarkTheme,
+          colors: {
+            ...Amoled.dark
+          }
+        }
       default:
         return MD3LightTheme
     }

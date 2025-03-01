@@ -11,6 +11,10 @@ import Entypo from '@expo/vector-icons/Entypo';
 import { useTheme, Text, Icon, Button, Divider, Portal } from "react-native-paper";
 import EditGroup from "@/components/EditGroup";
 import EditGroupName from "@/components/EditGroupName";
+import EditGroupColor from "@/components/EditGroupColor";
+import { useDispatch, useSelector } from "react-redux";
+import { RootState } from "@/store";
+import { setEditingGroup } from "@/store/slices/global";
 
 const EditBoard = () => {
     const { unlocked, LockScreen } = useLock();
@@ -19,11 +23,14 @@ const EditBoard = () => {
     const router = useRouter()
     const t = useTranslation()
     const theme = useTheme()
+    const { editingGroup } = useSelector((state: RootState) => state.global)
+    const dispatch = useDispatch()
 
     const [board, setBoard] = useState<Board | null>(null);
-    const [editingGroup, setEditingGroup] = useState<number | null>(null)
+    // const [editingGroup, setEditingGroup] = useState<number | null>(null)
     const [refreshing, setRefreshing] = useState<boolean>(false)
     const [editName, setEditName] = useState<string | null>(null)
+    const [editColor, setEditColor] = useState<string | null>(null)
 
     const refreshBoard = () => {
         setRefreshing(true)
@@ -37,7 +44,7 @@ const EditBoard = () => {
 
     const editGroup = (id: number) => {
         // router.navigate(`/board/edit/edit-group/${id}`)
-        setEditingGroup(id)
+        dispatch(setEditingGroup(id))
     }
 
     useEffect(() => {
@@ -73,6 +80,11 @@ const EditBoard = () => {
                         mode="contained"
                         icon="palette"
                         disabled={!editingGroup}
+                        onPress={() => {
+                            const currentColor = board?.groups?.find(({ id }) => id === editingGroup)?.color
+                            console.log(currentColor)
+                            setEditColor(currentColor ?? null)
+                        }}
                     >
                         {t('Edit color')}
                     </Button>
@@ -121,13 +133,18 @@ const EditBoard = () => {
         })
     }
 
-    useEffect(() => {
-        if (board?.groups && board.groups.length > 0) {
-            setEditingGroup(board.groups[0].id ?? null);
-        } else {
-            setEditingGroup(null);
-        }
-    }, [board])
+    // useEffect(() => {
+    //     if (board?.groups && board.groups.length > 0) {
+    //         setEditingGroup(prev => {
+    //             if (prev !== null) {
+    //                 return board.groups?.[0]?.id ?? null
+    //             }
+    //             return null
+    //         });
+    //     } else {
+    //         setEditingGroup(null);
+    //     }
+    // }, [board])
 
     const tabTitles = useMemo<React.ReactNode[]>(() => {
         if (board && board.groups) {
@@ -175,8 +192,24 @@ const EditBoard = () => {
                 </View>
             )
         }
-        return null
-    }, [editingGroup])
+        return (
+            <View
+                style={{
+                    width: '100%',
+                    height: '100%',
+                    alignItems: 'center',
+                    justifyContent: 'center'
+                }}
+            >
+                <Text
+                    variant="headlineMedium"
+                    style={{
+                        color: theme.colors.inversePrimary
+                    }}
+                >{t('Select group from menu')}</Text>
+            </View>
+        )
+    }, [editingGroup, t, theme])
 
     if (!unlocked) return LockScreen;
 
@@ -207,6 +240,17 @@ const EditBoard = () => {
                     currentName={editName}
                     onClose={() => {
                         setEditName(null)
+                        refreshBoard()
+                    }}
+                />
+            </Portal>
+            <Portal>
+                <EditGroupColor
+                    id={editingGroup}
+                    active={!!editColor}
+                    currentColor={editColor}
+                    onClose={() => {
+                        setEditColor(null)
                         refreshBoard()
                     }}
                 />
