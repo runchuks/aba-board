@@ -65,10 +65,10 @@ const EditGroupName: FC<Props> = ({ id, active, currentName, onClose }) => {
                 }}
             >
                 <Button
-                    mode="elevated"
+                    mode="contained"
                     style={{
                         flex: 1,
-                        backgroundColor: theme.colors.onError
+                        backgroundColor: theme.colors.error
                     }}
                     onPress={onClose}
                     icon="close"

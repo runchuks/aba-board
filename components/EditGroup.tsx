@@ -2,6 +2,7 @@ import useTranslation from "@/localization";
 import STORAGE from "@/storage";
 import { RootState } from "@/store";
 import { FinalGroup, Item } from "@/types";
+import { useRouter } from "expo-router";
 import { FC, useEffect, useMemo, useState } from "react";
 import { ScrollView, View } from "react-native";
 import { Button, Divider, Icon, IconButton, List, Text, useTheme } from "react-native-paper";
@@ -14,6 +15,7 @@ interface Props {
 const EditGroup: FC<Props> = ({ id }) => {
     const t = useTranslation()
     const theme = useTheme()
+    const router = useRouter()
 
     const { items } = useSelector((state: RootState) => state.global)
 
@@ -175,7 +177,7 @@ const EditGroup: FC<Props> = ({ id }) => {
                             <IconButton
                                 icon="pencil"
                                 onPress={() => {
-
+                                    router.navigate(`/board/edit/edit-item/${item}`)
                                 }}
                             />
                         </View>
