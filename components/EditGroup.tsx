@@ -141,7 +141,21 @@ const EditGroup: FC<Props> = ({ id }) => {
         return group.listsMap.map((column, index) => {
             const itemsRow = column.map((item, itemindex) => (
                 <List.Item
-                    title={items[item].name}
+                    title={() => (
+                        <View
+                            style={{
+                                flexDirection: 'row',
+                                alignItems: 'center',
+                                gap: 10
+                            }}
+                        >
+                            <Icon
+                                source={items[item].image ? 'image-outline' : 'image-off-outline'}
+                                size={15}
+                            />
+                            <Text>{items[item].name}</Text>
+                        </View>
+                    )}
                     key={items[item].id}
                     style={{
                         backgroundColor: lightUp === item ? theme.colors.secondary : 'transparent',
@@ -194,7 +208,9 @@ const EditGroup: FC<Props> = ({ id }) => {
                         title={() => (
                             <Button
                                 mode="outlined"
-                                onPress={() => { }}
+                                onPress={() => {
+                                    router.navigate('/board/edit/edit-item/0')
+                                }}
                             >
                                 {t('Add card')}
                             </Button>
@@ -204,7 +220,7 @@ const EditGroup: FC<Props> = ({ id }) => {
                 </List.Accordion>
             )
         });
-    }, [group, t, lightUp])
+    }, [group, t, lightUp, items])
 
     return (
         <ScrollView

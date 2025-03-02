@@ -2,62 +2,118 @@ import useTranslation from "@/localization";
 import { RootState } from "@/store";
 import { CameraView } from "expo-camera";
 import { useLocalSearchParams, useNavigation, useRouter } from "expo-router";
-import { FC, useCallback, useEffect, useRef, useState } from "react";
+import { FC, useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { View, Image } from "react-native";
-import { Button, IconButton, Text, TextInput, useTheme } from "react-native-paper";
-import { useSelector } from "react-redux";
+import { Button, Dialog, IconButton, Portal, Snackbar, Text, TextInput, useTheme } from "react-native-paper";
+import { useDispatch, useSelector } from "react-redux";
+import * as FileSystem from 'expo-file-system';
+import STORAGE from "@/storage";
+import { setItems, updateItemById } from "@/store/slices/global";
 
 const EditItem: FC = () => {
-    const theme = useTheme()
-    const { items } = useSelector((state: RootState) => state.global)
+    const theme = useTheme();
+    const { items } = useSelector((state: RootState) => state.global);
+    const dispatch = useDispatch();
     const { itemId } = useLocalSearchParams<{ itemId: string }>();
-    const navigation = useNavigation()
-    const router = useRouter()
-    const t = useTranslation()
+    const navigation = useNavigation();
+    const router = useRouter();
+    const t = useTranslation();
 
-    const [cameraFlashEnabled, setCameraFlashEnabled] = useState<boolean>(false)
-    const [cameraReady, setCameraReady] = useState<boolean>(false)
-    const [showCamera, setShowCamera] = useState<boolean>(false)
-    const [tempImage, setTempImage] = useState<string>('')
+    const [cameraFlashEnabled, setCameraFlashEnabled] = useState<boolean>(false);
+    const [cameraReady, setCameraReady] = useState<boolean>(false);
+    const [showCamera, setShowCamera] = useState<boolean>(false);
+    const [tempImage, setTempImage] = useState<string>('');
+    const [showDoneSnack, setShowDoneSnack] = useState<boolean>(false);
+    const [showChanges, setShowChanges] = useState<boolean>(false);
+    const [hasChanges, setHasChanges] = useState<boolean>(false);
+    const [loading, setLoading] = useState<boolean>(false);
 
-    const camera = useRef<CameraView>(null)
-    const cameraWrap = useRef(null)
+    const camera = useRef<CameraView>(null);
+    const cameraWrap = useRef(null);
 
-    const { name, image } = items[parseInt(itemId, 10)];
+    const isNewItem = itemId === '0';
+    const item = isNewItem ? { name: '', image: '' } : items[parseInt(itemId, 10)];
+    const [editName, setEditName] = useState<string>(item.name);
+
+    useEffect(() => {
+        console.log(editName);
+    }, [editName]);
 
     const takePicture = useCallback(() => {
         if (cameraReady) {
             camera.current?.takePictureAsync({ quality: 0.5, base64: true }).then((data) => {
                 if (data?.uri) {
-                    setTempImage(data.uri)
-                    setShowCamera(false)
-                    setCameraFlashEnabled(false)
+                    setTempImage(data.uri);
+                    setShowCamera(false);
+                    setCameraFlashEnabled(false);
+                    setHasChanges(true);
                 }
             }).catch((e) => {
-                console.log('Error taking picture', e)
-            })
+                console.log('Error taking picture', e);
+            });
         }
-    }, [cameraReady])
+    }, [cameraReady]);
+
+    const saveItem = useCallback(async () => {
+        setLoading(true);
+        let newPath = '';
+
+        if (tempImage) {
+            const now = Date.now();
+            newPath = FileSystem.documentDirectory + `image-${itemId}-${now}.jpg`;
+
+            const { exists } = await FileSystem.getInfoAsync(item.image);
+            if (exists) {
+                await FileSystem.deleteAsync(item.image);
+            }
+
+            await FileSystem.copyAsync({
+                from: tempImage,
+                to: newPath
+            });
+        }
+
+        if (isNewItem) {
+            const newId = await STORAGE.addItem(editName, 'en', '', newPath);
+            dispatch(setItems(await STORAGE.getAllItemsAsRecord()));
+            router.replace(`/board/edit/edit-item/${newId}`);
+        } else {
+            await STORAGE.updateItemById(Number(itemId), {
+                name: editName,
+                ...(newPath ? { image: newPath } : {})
+            });
+            dispatch(updateItemById({
+                id: itemId,
+                data: {
+                    name: editName,
+                    ...(newPath ? { image: newPath } : {})
+                }
+            }));
+            setTempImage('');
+            setHasChanges(false);
+            setShowDoneSnack(true);
+        }
+
+        setLoading(false);
+    }, [editName, itemId, tempImage, item.image, isNewItem, dispatch, router]);
 
     useEffect(() => {
         navigation.setOptions({
-            title: t('Edit item'),
+            title: t(isNewItem ? 'Add card' : 'Edit card'),
             headerRight: () => (
-                <View
-                    style={{
-                        flexDirection: 'row',
-                        gap: 10
-                    }}
-                >
+                <View style={{ flexDirection: 'row', gap: 10 }}>
                     <Button
                         mode="contained"
                         icon="close"
-                        style={{
-                            backgroundColor: theme.colors.error
-                        }}
+                        style={{ backgroundColor: theme.colors.error }}
                         onPress={() => {
-                            router.back()
+                            if (hasChanges) {
+                                setShowChanges(true);
+                            } else {
+                                router.back();
+                            }
                         }}
+                        disabled={loading}
                     >
                         {t('Cancel')}
                     </Button>
@@ -65,60 +121,34 @@ const EditItem: FC = () => {
                     <Button
                         mode="contained"
                         icon="check"
+                        onPress={() => saveItem()}
+                        disabled={loading}
+                        loading={loading}
                     >
                         {t('Save')}
                     </Button>
                 </View>
-
             )
         });
-    }, [navigation, t])
+    }, [navigation, t, saveItem, theme.colors.error, loading, router, hasChanges, isNewItem]);
 
     return (
-        <View
-            style={{
-                backgroundColor: theme.colors.background,
-                height: '100%',
-                paddingBottom: 65,
-                paddingHorizontal: 20,
-                paddingTop: 20,
-                gap: 20,
-                flexDirection: 'row'
-            }}
-        >
-            <View
-                style={{
-                    flex: 2
-                }}
-            >
+        <View style={{ backgroundColor: theme.colors.background, height: '100%', paddingBottom: 65, paddingHorizontal: 20, paddingTop: 20, gap: 20, flexDirection: 'row' }}>
+            <View style={{ flex: 2 }}>
                 <TextInput
-                    value={name}
-                    label={t('Item name')}
+                    value={editName}
+                    label={t('Card name')}
+                    onChangeText={val => {
+                        setHasChanges(true);
+                        setEditName(val);
+                    }}
                 />
             </View>
-            <View
-                style={{
-                    flex: 1
-                }}
-            >
-                <View
-                    style={{
-                        width: '100%',
-                        aspectRatio: '1/1',
-                        justifyContent: 'center',
-                        alignItems: 'center',
-                        borderRadius: theme.roundness,
-                        position: 'relative'
-                    }}
-                    ref={cameraWrap}
-                >
+            <View style={{ flex: 1 }}>
+                <View style={{ width: '100%', aspectRatio: '1/1', justifyContent: 'center', alignItems: 'center', borderRadius: theme.roundness, position: 'relative' }} ref={cameraWrap}>
                     {showCamera ? (
                         <CameraView
-                            style={{
-                                width: '100%',
-                                height: '100%',
-                                borderRadius: theme.roundness
-                            }}
+                            style={{ width: '100%', height: '100%', borderRadius: theme.roundness }}
                             facing={"back"}
                             autofocus="on"
                             ratio="1:1"
@@ -128,37 +158,23 @@ const EditItem: FC = () => {
                             animateShutter={false}
                             ref={camera}
                         />
-                    ) : image ? (
+                    ) : item.image ? (
                         <Image
-                            source={{ uri: tempImage || image }}
-                            style={{
-                                width: '100%',
-                                height: '100%',
-                                borderRadius: theme.roundness
-                            }}
+                            source={{ uri: tempImage || item.image }}
+                            style={{ width: '100%', height: '100%', borderRadius: theme.roundness }}
                         />
                     ) : (
                         <Text>{t('No image')}</Text>
-                    )
-                    }
+                    )}
 
                     {showCamera ? (
-                        <View
-                            style={{
-                                position: 'absolute',
-                                width: '100%',
-                                bottom: 0,
-                                alignItems: 'center',
-                                justifyContent: 'space-between',
-                                flexDirection: 'row'
-                            }}
-                        >
+                        <View style={{ position: 'absolute', width: '100%', bottom: 0, alignItems: 'center', justifyContent: 'space-between', flexDirection: 'row' }}>
                             <IconButton
                                 icon="close"
                                 iconColor={theme.colors.error}
                                 onPress={() => {
-                                    setShowCamera(false)
-                                    setCameraFlashEnabled(false)
+                                    setShowCamera(false);
+                                    setCameraFlashEnabled(false);
                                 }}
                             />
                             <IconButton
@@ -166,72 +182,64 @@ const EditItem: FC = () => {
                                 iconColor={theme.colors.primary}
                                 size={50}
                                 onPress={() => {
-                                    takePicture()
+                                    takePicture();
                                 }}
                             />
                             <IconButton
                                 icon={cameraFlashEnabled ? 'flash' : 'flash-off'}
                                 iconColor={theme.colors.secondary}
                                 onPress={() => {
-                                    setCameraFlashEnabled(!cameraFlashEnabled)
+                                    setCameraFlashEnabled(!cameraFlashEnabled);
                                 }}
                             />
                         </View>
                     ) : (
-                        <View
-                            style={{
-                                position: 'absolute',
-                                width: '100%',
-                                bottom: 0,
-                                flexDirection: 'row',
-                                justifyContent: 'space-between',
-                                gap: 10,
-                                backgroundColor: theme.colors.backdrop,
-                                paddingHorizontal: 10
-                            }}
-                        >
+                        <View style={{ position: 'absolute', width: '100%', bottom: 0, flexDirection: 'row', justifyContent: 'space-between', gap: 10, backgroundColor: theme.colors.backdrop, paddingHorizontal: 10 }}>
                             <IconButton
-                                icon="trash-can-outline"
+                                icon={tempImage ? 'close' : 'trash-can-outline'}
                                 iconColor={theme.colors.error}
                                 onPress={() => {
                                     if (tempImage) {
-                                        setTempImage('')
-                                        setShowCamera(true)
+                                        setTempImage('');
                                     }
                                 }}
                             />
-                            {tempImage ? (
-                                <IconButton
-                                    icon="check"
-                                    iconColor={theme.colors.primary}
-                                    onPress={() => { }}
-                                />
-                            ) : (
-                                <IconButton
-                                    icon="camera"
-                                    iconColor={theme.colors.primary}
-                                    onPress={() => setShowCamera(true)}
-                                />
-                            )}
-
+                            <IconButton
+                                icon="camera"
+                                iconColor={theme.colors.primary}
+                                onPress={() => setShowCamera(true)}
+                            />
                         </View>
                     )}
-
                 </View>
-                {/* <CameraView
-                    style={{ width: '100%', height: '100%' }}
-                    facing={"back"}
-                    autofocus="on"
-                    ratio="1:1"
-                    enableTorch={cameraFlashEnabled}
-                    onCameraReady={() => setCameraReady(true)}
-                    onMountError={(e) => console.log('Camera error', e)}
-                    animateShutter={false}
-                    ref={camera}
-                /> */}
             </View>
+            <Portal>
+                <Snackbar
+                    visible={showDoneSnack}
+                    onDismiss={() => setShowDoneSnack(false)}
+                    action={{
+                        label: t('Go back'),
+                        onPress: () => {
+                            router.back();
+                        },
+                    }}>
+                    {t('Card saved')}
+                </Snackbar>
+            </Portal>
+            <Portal>
+                <Dialog visible={showChanges} onDismiss={() => setShowChanges(false)}>
+                    <Dialog.Title>{t('Unsaved changes')}</Dialog.Title>
+                    <Dialog.Content>
+                        <Text variant="bodyMedium">{t('You have unsaved changes')}</Text>
+                    </Dialog.Content>
+                    <Dialog.Actions>
+                        <Button onPress={() => router.back()}>{t('Discard changes')}</Button>
+                        <Button onPress={() => setShowChanges(false)}>{t('Return')}</Button>
+                    </Dialog.Actions>
+                </Dialog>
+            </Portal>
         </View>
-    )
-}
+    );
+};
 
-export default EditItem
+export default EditItem;

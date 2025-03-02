@@ -30,6 +30,7 @@
     "New group": " Jauna grupa",
     "Request camera permission": "Pieprasīt kameras atļauju",
     "Item name": "Vienības nosaukums",
+    "Card name": "Kartiņas nosaukums",
     "Save": "Saglabāt",
     "Close": "Aizvērt",
     "Speech Language": "Runas valoda",
@@ -61,5 +62,13 @@
     "Skyflare Light": "Skyflare Gaišs",
     "Playful Dark": "Playful Tumšs",
     "Playful Light": "Playful Gaišs",
-    "Select group from menu": "Izvēlieties grupu no izvēlnes"
+    "Select group from menu": "Izvēlieties grupu no izvēlnes",
+    "Add card": "Pievienot kartiņu",
+    "No image": "Nav attēla",
+    "Edit item": "Rediģēt vienību",
+    "Edit card": "Rediģēt kartiņu",
+    "Unsaved changes": "Nesaglabātas izmaiņas",
+    "You have unsaved changes": "Jums ir nesaglabātas izmaiņas",
+    "Discard changes": "Atcelt izmaiņas",
+    "Return": "Atgriezties"
 }

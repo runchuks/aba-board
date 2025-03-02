@@ -424,6 +424,8 @@ const updateItemById = async (itemId: number, updates: { name?: string; image?: 
       // Build dynamic SQL query
       const fields = [];
       const values = [];
+
+      console.log({itemId, updates})
   
       if (updates.name !== undefined) {
           fields.push("name = ?");

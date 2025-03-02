@@ -54,6 +54,13 @@ const globalSlice = createSlice({
     },
     setEditingGroup: (state, action: PayloadAction<number | null>) => {
       state.editingGroup = action.payload
+    },
+    updateItemById: (state, action) => {
+      console.log(action.payload)
+      state.items[parseInt(action.payload.id, 10)] = {
+        ...state.items[action.payload.id],
+        ...action.payload.data
+      }
     }
   },
 });
@@ -68,5 +75,6 @@ export const {
   setLastDragged,
   setVoicesLoaded,
   setEditingGroup,
+  updateItemById,
 } = globalSlice.actions;
 export default globalSlice.reducer;

@@ -138,7 +138,7 @@ const Board = () => {
         console.log('dropped', id)
         const sorted = Object.entries(insideCards.current)
             .filter(([, value]) => value !== null) // Exclude null values
-            .sort(([, a], [, b]) => a - b)         // Sort by value
+            .sort(([, a], [, b]) => a - b)         // Sort by val
             .map(([key]) => Number(key));
         setInsiteIds(sorted)
     }
