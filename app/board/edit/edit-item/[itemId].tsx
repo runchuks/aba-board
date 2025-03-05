@@ -12,7 +12,7 @@ import { setItems, updateItemById } from "@/store/slices/global";
 
 const EditItem: FC = () => {
     const theme = useTheme();
-    const { items } = useSelector((state: RootState) => state.global);
+    const { items, editingGroup, editingColumn } = useSelector((state: RootState) => state.global);
     const dispatch = useDispatch();
     const { itemId } = useLocalSearchParams<{ itemId: string }>();
     const navigation = useNavigation();
@@ -76,6 +76,17 @@ const EditItem: FC = () => {
         if (isNewItem) {
             const newId = await STORAGE.addItem(editName, 'en', '', newPath);
             dispatch(setItems(await STORAGE.getAllItemsAsRecord()));
+
+            if (editingGroup && editingColumn && newId) {
+                // Update the group with the new item ID
+                const group = await STORAGE.getGroup(editingGroup);
+                if (group) {
+                    console.log({ l: group.lists, newId })
+                    group.lists[editingColumn].push(newId);
+                    await STORAGE.updateGroupById(editingGroup, { lists: JSON.stringify(group.lists) });
+                    dispatch(setItems(await STORAGE.getAllItemsAsRecord()));
+                }
+            }
             router.replace(`/board/edit/edit-item/${newId}`);
         } else {
             await STORAGE.updateItemById(Number(itemId), {
@@ -95,7 +106,7 @@ const EditItem: FC = () => {
         }
 
         setLoading(false);
-    }, [editName, itemId, tempImage, item.image, isNewItem, dispatch, router]);
+    }, [editName, itemId, tempImage, item.image, isNewItem, dispatch, router, editingGroup, editingColumn]);
 
     useEffect(() => {
         navigation.setOptions({
@@ -158,7 +169,7 @@ const EditItem: FC = () => {
                             animateShutter={false}
                             ref={camera}
                         />
-                    ) : item.image ? (
+                    ) : item.image || tempImage ? (
                         <Image
                             source={{ uri: tempImage || item.image }}
                             style={{ width: '100%', height: '100%', borderRadius: theme.roundness }}

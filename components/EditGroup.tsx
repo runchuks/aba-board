@@ -1,12 +1,13 @@
 import useTranslation from "@/localization";
 import STORAGE from "@/storage";
 import { RootState } from "@/store";
+import { setEditingColumn } from "@/store/slices/global";
 import { FinalGroup, Item } from "@/types";
-import { useRouter } from "expo-router";
-import { FC, useEffect, useMemo, useState } from "react";
+import { useFocusEffect, useNavigation, useRouter } from "expo-router";
+import { FC, useCallback, useEffect, useMemo, useState } from "react";
 import { ScrollView, View } from "react-native";
-import { Button, Divider, Icon, IconButton, List, Text, useTheme } from "react-native-paper";
-import { useSelector } from "react-redux";
+import { Button, Divider, Icon, IconButton, List, Text, useTheme, Dialog, Portal } from "react-native-paper";
+import { useDispatch, useSelector } from "react-redux";
 
 interface Props {
     id: number
@@ -16,12 +17,15 @@ const EditGroup: FC<Props> = ({ id }) => {
     const t = useTranslation()
     const theme = useTheme()
     const router = useRouter()
+    const navigation = useNavigation()
 
     const { items } = useSelector((state: RootState) => state.global)
+    const dispatch = useDispatch()
 
     const [group, setGroup] = useState<FinalGroup | null>(null)
     const [lightUp, setLightUp] = useState<number | null>(null)
-
+    const [showDeleteDialog, setShowDeleteDialog] = useState<boolean>(false);
+    const [itemToDelete, setItemToDelete] = useState<{ itemId: number, columnIndex: number, itemIndex: number } | null>(null);
 
     const getListItems = async (ids: number[][]): Promise<Item[][]> => {
         try {
@@ -93,18 +97,9 @@ const EditGroup: FC<Props> = ({ id }) => {
                 console.error('Error updating group:', error);
             });
         }
-
-        // const newLists = [...group?.listsMap]
-        // newLists[index] = data;
-
-        // STORAGE.updateGroupById(id, {
-        //     lists: JSON.stringify(newLists)
-        // }).then(() => {
-
-        // })
     }
 
-    useEffect(() => {
+    const getGroupItems = () => {
         STORAGE.getGroup(Number(id)).then(result => {
             if (result) {
                 getListItems(result.lists).then(items => {
@@ -122,6 +117,10 @@ const EditGroup: FC<Props> = ({ id }) => {
         }).catch(error => {
             console.error('Error fetching group:', error);
         });
+    }
+
+    useEffect(() => {
+        getGroupItems();
     }, [id])
 
     useEffect(() => {
@@ -135,6 +134,43 @@ const EditGroup: FC<Props> = ({ id }) => {
             }, 200)
         }
     }, [lightUp])
+
+    useEffect(() => {
+        const unsubscribe = navigation.addListener('focus', () => {
+            getGroupItems()
+        });
+
+        return unsubscribe;
+    }, [navigation]);
+
+    const handleDeleteItem = async () => {
+        if (!itemToDelete) return;
+
+        const { itemId, columnIndex, itemIndex } = itemToDelete;
+
+        try {
+            await STORAGE.deleteItemById(itemId);
+
+            const updatedListsMap = [...group!.listsMap];
+            updatedListsMap[columnIndex].splice(itemIndex, 1);
+
+            setGroup({
+                ...group!,
+                listsMap: updatedListsMap
+            });
+
+            await STORAGE.updateGroupById(id, {
+                lists: JSON.stringify(updatedListsMap)
+            });
+
+            console.log('Item deleted and group updated successfully');
+        } catch (error) {
+            console.error('Error deleting item:', error);
+        } finally {
+            setShowDeleteDialog(false);
+            setItemToDelete(null);
+        }
+    };
 
     const lists = useMemo<React.ReactNode[]>(() => {
         if (!group) return [];
@@ -185,7 +221,8 @@ const EditGroup: FC<Props> = ({ id }) => {
                                 icon="trash-can-outline"
                                 iconColor={theme.colors.error}
                                 onPress={() => {
-
+                                    setItemToDelete({ itemId: item, columnIndex: index, itemIndex: itemindex });
+                                    setShowDeleteDialog(true);
                                 }}
                             />
                             <IconButton
@@ -209,6 +246,7 @@ const EditGroup: FC<Props> = ({ id }) => {
                             <Button
                                 mode="outlined"
                                 onPress={() => {
+                                    dispatch(setEditingColumn(index))
                                     router.navigate('/board/edit/edit-item/0')
                                 }}
                             >
@@ -229,6 +267,18 @@ const EditGroup: FC<Props> = ({ id }) => {
             }}
         >
             {lists}
+            <Portal>
+                <Dialog visible={showDeleteDialog} onDismiss={() => setShowDeleteDialog(false)}>
+                    <Dialog.Title>{t('Delete item')}</Dialog.Title>
+                    <Dialog.Content>
+                        <Text>{t('Are you sure you want to delete this item?')}</Text>
+                    </Dialog.Content>
+                    <Dialog.Actions>
+                        <Button onPress={() => setShowDeleteDialog(false)}>{t('Cancel')}</Button>
+                        <Button onPress={handleDeleteItem}>{t('Delete')}</Button>
+                    </Dialog.Actions>
+                </Dialog>
+            </Portal>
         </ScrollView>
     )
 }

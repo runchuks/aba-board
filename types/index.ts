@@ -17,6 +17,7 @@ export interface GlobalState {
     lastDragged: number | null
     voicesLoaded: boolean
     editingGroup: number | null
+    editingColumn: number | null
 }
 
 export interface User {
