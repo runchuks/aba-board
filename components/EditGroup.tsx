@@ -3,23 +3,19 @@ import STORAGE from "@/storage";
 import { RootState } from "@/store";
 import { setEditingColumn } from "@/store/slices/global";
 import { FinalGroup, Item } from "@/types";
-import { useFocusEffect, useNavigation, useRouter } from "expo-router";
+import { useNavigation, useRouter } from "expo-router";
 import { FC, useCallback, useEffect, useMemo, useState } from "react";
 import { ScrollView, View } from "react-native";
 import { Button, Divider, Icon, IconButton, List, Text, useTheme, Dialog, Portal } from "react-native-paper";
 import { useDispatch, useSelector } from "react-redux";
 
-interface Props {
-    id: number
-}
-
-const EditGroup: FC<Props> = ({ id }) => {
+const EditGroup: FC = () => {
     const t = useTranslation()
     const theme = useTheme()
     const router = useRouter()
     const navigation = useNavigation()
 
-    const { items } = useSelector((state: RootState) => state.global)
+    const { items, editingGroup } = useSelector((state: RootState) => state.global)
     const dispatch = useDispatch()
 
     const [group, setGroup] = useState<FinalGroup | null>(null)
@@ -45,7 +41,7 @@ const EditGroup: FC<Props> = ({ id }) => {
         }
     };
 
-    const onOrderChange = (idToMove: number, direction: 'up' | 'down') => {
+    const onOrderChange = useCallback((idToMove: number, direction: 'up' | 'down') => {
         if (!group) return;
 
         const listsMap = [...group.listsMap];
@@ -80,7 +76,7 @@ const EditGroup: FC<Props> = ({ id }) => {
             }
         }
 
-        if (found) {
+        if (found && editingGroup !== null) {
             setLightUp(idToMove)
             setGroup({
                 ...group,
@@ -89,7 +85,7 @@ const EditGroup: FC<Props> = ({ id }) => {
 
             console.log({ listsMap })
 
-            STORAGE.updateGroupById(id, {
+            STORAGE.updateGroupById(editingGroup, {
                 lists: JSON.stringify(listsMap)
             }).then(() => {
                 console.log('Group updated successfully');
@@ -97,10 +93,10 @@ const EditGroup: FC<Props> = ({ id }) => {
                 console.error('Error updating group:', error);
             });
         }
-    }
+    }, [editingGroup, group])
 
-    const getGroupItems = () => {
-        STORAGE.getGroup(Number(id)).then(result => {
+    const getGroupItems = useCallback(() => {
+        STORAGE.getGroup(Number(editingGroup)).then(result => {
             if (result) {
                 getListItems(result.lists).then(items => {
                     const returnValues = {
@@ -117,14 +113,14 @@ const EditGroup: FC<Props> = ({ id }) => {
         }).catch(error => {
             console.error('Error fetching group:', error);
         });
-    }
+    }, [editingGroup])
 
     useEffect(() => {
         getGroupItems();
-    }, [id])
+    }, [getGroupItems])
 
     useEffect(() => {
-        console.log({ group })
+        console.log('from group', { group })
     }, [group])
 
     useEffect(() => {
@@ -141,10 +137,10 @@ const EditGroup: FC<Props> = ({ id }) => {
         });
 
         return unsubscribe;
-    }, [navigation]);
+    }, [getGroupItems, navigation]);
 
-    const handleDeleteItem = async () => {
-        if (!itemToDelete) return;
+    const handleDeleteItem = useCallback(async () => {
+        if (!itemToDelete || editingGroup === null) return;
 
         const { itemId, columnIndex, itemIndex } = itemToDelete;
 
@@ -159,7 +155,7 @@ const EditGroup: FC<Props> = ({ id }) => {
                 listsMap: updatedListsMap
             });
 
-            await STORAGE.updateGroupById(id, {
+            await STORAGE.updateGroupById(editingGroup, {
                 lists: JSON.stringify(updatedListsMap)
             });
 
@@ -170,7 +166,7 @@ const EditGroup: FC<Props> = ({ id }) => {
             setShowDeleteDialog(false);
             setItemToDelete(null);
         }
-    };
+    }, [editingGroup, group, itemToDelete]);
 
     const lists = useMemo<React.ReactNode[]>(() => {
         if (!group) return [];

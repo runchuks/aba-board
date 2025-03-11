@@ -12,7 +12,7 @@ import { setItems, updateItemById } from "@/store/slices/global";
 
 const EditItem: FC = () => {
     const theme = useTheme();
-    const { items, editingGroup, editingColumn } = useSelector((state: RootState) => state.global);
+    const { items, editingGroup, editingColumn, lang } = useSelector((state: RootState) => state.global);
     const dispatch = useDispatch();
     const { itemId } = useLocalSearchParams<{ itemId: string }>();
     const navigation = useNavigation();
@@ -34,10 +34,6 @@ const EditItem: FC = () => {
     const isNewItem = itemId === '0';
     const item = isNewItem ? { name: '', image: '' } : items[parseInt(itemId, 10)];
     const [editName, setEditName] = useState<string>(item.name);
-
-    useEffect(() => {
-        console.log(editName);
-    }, [editName]);
 
     const takePicture = useCallback(() => {
         if (cameraReady) {
@@ -74,10 +70,10 @@ const EditItem: FC = () => {
         }
 
         if (isNewItem) {
-            const newId = await STORAGE.addItem(editName, 'en', '', newPath);
+            const newId = await STORAGE.addItem(editName, lang, '', newPath);
             dispatch(setItems(await STORAGE.getAllItemsAsRecord()));
 
-            if (editingGroup && editingColumn && newId) {
+            if (editingGroup && editingColumn !== null && newId) {
                 // Update the group with the new item ID
                 const group = await STORAGE.getGroup(editingGroup);
                 if (group) {
@@ -126,7 +122,7 @@ const EditItem: FC = () => {
                         }}
                         disabled={loading}
                     >
-                        {t('Cancel')}
+                        {t(isNewItem ? 'Cancel' : 'Back')}
                     </Button>
 
                     <Button

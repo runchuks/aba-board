@@ -386,9 +386,11 @@ const addItem = async (name: string, lang: string, color = '', image = '') => {
       [name, image, color, lang]
     );
 
+    console.log(`DB: Added new item (${lastInsertRowId})`)
+
     return lastInsertRowId;
   } catch (error) {
-    console.error("Error inserting item:", error);
+    console.error("DB: Error inserting item:", error);
   }
 };
 
@@ -461,13 +463,15 @@ const getGroup = async (id: number) => {
 
     if (!result) return null
 
+    console.log(`DB: Fetched group by ID: ${id}`)
+
     return {
       ...result,
       lists: JSON.parse(result.lists)
     } as Group
     
   } catch (error) {
-      console.error("Error fetching group by ID:", error);
+      console.error("DB: Error fetching group by ID:", error);
       return null;
   }
 }
@@ -524,9 +528,9 @@ const enableForeignKeys = async () => {
   const db = await getDatabase();
   try {
     await db.runAsync('PRAGMA foreign_keys = ON;');
-    console.log("Foreign keys enabled!");
+    console.log("DB: Foreign keys enabled!");
   } catch (error) {
-    console.error("Error enabling foreign keys:", error);
+    console.error("DB: Error enabling foreign keys:", error);
   }
 };
 

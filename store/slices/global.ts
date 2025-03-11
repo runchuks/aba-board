@@ -54,6 +54,7 @@ const globalSlice = createSlice({
       state.lastDragged = action.payload
     },
     setEditingGroup: (state, action: PayloadAction<number | null>) => {
+      console.log('setting editing group: ', action.payload)
       state.editingGroup = action.payload
     },
     updateItemById: (state, action) => {

@@ -1,14 +1,11 @@
-import GroupEdit from "@/components/GroupEdit";
 import useTranslation from "@/localization";
 import useLock from "@/lock";
 import STORAGE from "@/storage";
 import { Board } from "@/types";
-import { useLocalSearchParams, useNavigation, useRouter } from "expo-router";
-import { useEffect, useMemo, useState } from "react";
+import { useLocalSearchParams, useNavigation } from "expo-router";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import { ScrollView, View, StyleSheet, TouchableOpacity, RefreshControl } from "react-native"
-import AntDesign from '@expo/vector-icons/AntDesign';
-import Entypo from '@expo/vector-icons/Entypo';
-import { useTheme, Text, Icon, Button, Divider, Portal } from "react-native-paper";
+import { useTheme, Text, Icon, Button, Portal } from "react-native-paper";
 import EditGroup from "@/components/EditGroup";
 import EditGroupName from "@/components/EditGroupName";
 import EditGroupColor from "@/components/EditGroupColor";
@@ -20,19 +17,17 @@ const EditBoard = () => {
     const { unlocked, LockScreen } = useLock();
     const { boardId } = useLocalSearchParams();
     const navigation = useNavigation();
-    const router = useRouter()
     const t = useTranslation()
     const theme = useTheme()
     const { editingGroup } = useSelector((state: RootState) => state.global)
     const dispatch = useDispatch()
 
     const [board, setBoard] = useState<Board | null>(null);
-    // const [editingGroup, setEditingGroup] = useState<number | null>(null)
     const [refreshing, setRefreshing] = useState<boolean>(false)
     const [editName, setEditName] = useState<string | null>(null)
     const [editColor, setEditColor] = useState<string | null>(null)
 
-    const refreshBoard = () => {
+    const refreshBoard = useCallback(() => {
         setRefreshing(true)
         STORAGE.getBoardById(Number(boardId)).then(result => {
             if (result) {
@@ -40,12 +35,17 @@ const EditBoard = () => {
                 setRefreshing(false)
             }
         })
-    }
+    }, [boardId])
 
-    const editGroup = (id: number) => {
-        // router.navigate(`/board/edit/edit-group/${id}`)
+    const addGroup = useCallback(() => {
+        STORAGE.addGroup(Number(boardId), t('New group')).then(() => {
+            refreshBoard()
+        })
+    }, [boardId, refreshBoard, t])
+
+    const editGroup = useCallback((id: number) => {
         dispatch(setEditingGroup(id))
-    }
+    }, [dispatch])
 
     useEffect(() => {
         navigation.setOptions({
@@ -92,11 +92,11 @@ const EditBoard = () => {
 
             ),
         });
-    }, [board?.groups, editingGroup, navigation, t])
+    }, [addGroup, board?.groups, editingGroup, navigation, t])
 
     useEffect(() => {
         refreshBoard()
-    }, [boardId, navigation])
+    }, [boardId, navigation, refreshBoard])
 
     useEffect(() => {
         console.log({ editingGroup })
@@ -109,42 +109,7 @@ const EditBoard = () => {
         });
 
         return unsubscribe;
-    }, [navigation]);
-
-    const renderGroups = useMemo<React.ReactNode[]>(() => {
-        if (board && board.groups) {
-            return board.groups.map(group => (
-                <TouchableOpacity
-                    onPress={() => editGroup(group.id)}
-                    style={[style.groupWrap, { backgroundColor: group.color }]}
-                    key={group.id}
-                >
-                    <Text numberOfLines={1}>{group.name}</Text>
-                    <Entypo name="chevron-thin-right" size={24} color="black" />
-                </TouchableOpacity>
-            ))
-        }
-        return []
-    }, [JSON.stringify(board), editingGroup]);
-
-    const addGroup = () => {
-        STORAGE.addGroup(Number(boardId), t('New group')).then(() => {
-            refreshBoard()
-        })
-    }
-
-    // useEffect(() => {
-    //     if (board?.groups && board.groups.length > 0) {
-    //         setEditingGroup(prev => {
-    //             if (prev !== null) {
-    //                 return board.groups?.[0]?.id ?? null
-    //             }
-    //             return null
-    //         });
-    //     } else {
-    //         setEditingGroup(null);
-    //     }
-    // }, [board])
+    }, [navigation, refreshBoard]);
 
     const tabTitles = useMemo<React.ReactNode[]>(() => {
         if (board && board.groups) {
@@ -178,7 +143,7 @@ const EditBoard = () => {
             ))
         }
         return [];
-    }, [board, editingGroup, theme.colors.elevation.level3])
+    }, [board, editGroup, editingGroup, theme.colors.elevation.level3])
 
     const tabContents = useMemo<React.ReactNode>(() => {
         if (editingGroup) {
@@ -188,7 +153,7 @@ const EditBoard = () => {
                         height: '100%'
                     }}
                 >
-                    <EditGroup id={editingGroup} />
+                    <EditGroup />
                 </View>
             )
         }
@@ -214,24 +179,6 @@ const EditBoard = () => {
     if (!unlocked) return LockScreen;
 
     return (
-        // <View style={style.wrap}>
-        //     <ScrollView
-        //         style={{width: '100%'}}
-        //         refreshControl={
-        //             <RefreshControl refreshing={refreshing} onRefresh={refreshBoard} />
-        //         }
-        //     >
-        //         <View style={{ alignItems: "center" }}>
-        //             <View style={style.innerWrap}>
-        //                 {renderGroups}
-        //                 <TouchableOpacity style={style.addGroup} onPress={addGroup}>
-        //                     <AntDesign name="plus" size={24} color="grey" />
-        //                 </TouchableOpacity>
-        //             </View>
-        //         </View>
-        //     </ScrollView>
-        // </View>
-
         <View style={[style.wrap, { backgroundColor: theme.colors.background }]}>
             <Portal>
                 <EditGroupName
@@ -289,16 +236,6 @@ const style = StyleSheet.create({
         alignItems: "center",
         paddingVertical: 5
     },
-    // groupWrap: {
-    //     borderWidth: 1,
-    //     borderRadius: 5,
-    //     flexDirection: "row",
-    //     justifyContent: "space-between",
-    //     alignItems: "center",
-    //     padding: 10,
-    //     marginBottom: 10,
-    //     height: 50
-    // },
     tabsTitlesWrap: {
         width: 300,
         height: '100%',
