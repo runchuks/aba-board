@@ -94,7 +94,7 @@ const EditItem: FC = () => {
                 id: itemId,
                 data: {
                     name: editName,
-                    ...(newPath ? { image: newPath } : {})
+                    ...(newPath || removeImage ? { image: removeImage ? '' : newPath } : {})
                 }
             }));
             setTempImage('');
@@ -215,7 +215,7 @@ const EditItem: FC = () => {
                                     paddingHorizontal: 10
                                 }}
                             >
-                                {!removeImage || tempImage ? (
+                                {(tempImage || (item.image && !removeImage)) && (
                                     <IconButton
                                         icon={tempImage ? 'close' : 'trash-can-outline'}
                                         iconColor={theme.colors.error}
@@ -226,9 +226,8 @@ const EditItem: FC = () => {
                                                 setRemoveImage(true);
                                             }
                                         }}
-
                                     />
-                                ) : null}
+                                )}
                                 <IconButton
                                     icon="camera"
                                     iconColor={theme.colors.primary}
