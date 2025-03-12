@@ -70,5 +70,12 @@
     "Unsaved changes": "Nesaglabātas izmaiņas",
     "You have unsaved changes": "Jums ir nesaglabātas izmaiņas",
     "Discard changes": "Atcelt izmaiņas",
-    "Return": "Atgriezties"
+    "Return": "Atgriezties",
+    "Delete group": "Dzēst grupu",
+    "Are you sure you want to delete this group?": "Vai tiešām vēlaties dzēst šo grupu?",
+    "Delete item": "Dzēst vienību",
+    "Are you sure you want to delete this item?": "Vai tiešām vēlaties dzēst šo vienību?",
+    "Back": "Atpakaļ",
+    "Card saved": "Kartiņa saglabāta",
+    "Go back": "Atgriezties"
 }

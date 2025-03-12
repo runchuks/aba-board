@@ -194,9 +194,8 @@ const createStarterBoard = async (userId: number) => {
     // Step 3: Insert new group
     const { lastInsertRowId: lastGroupInserted } = await db.runAsync(
       `INSERT INTO groups (name, color, lists) VALUES (?, ?, ?);`,
-      ['Actions', '#63a845', JSON.stringify([[],[],[]])]
+      ['Group 1', '#ffddc1', JSON.stringify([[],[],[]])]
     );
-    console.log("Group added successfully!", lastGroupInserted);
 
     // Step 4: Link board and group in the board_groups table
     await db.runAsync(
@@ -207,9 +206,8 @@ const createStarterBoard = async (userId: number) => {
 
     const { lastInsertRowId: lastGroup1Inserted } = await db.runAsync(
       `INSERT INTO groups (name, color, lists) VALUES (?, ?, ?);`,
-      ['Group 1', '#65a8c7', JSON.stringify([[],[],[]])]
+      ['Group 2', '#65a8c7', JSON.stringify([[],[],[]])]
     );
-    console.log("Group added successfully!", lastGroup1Inserted);
 
     // Step 4: Link board and group in the board_groups table
     await db.runAsync(
@@ -217,9 +215,8 @@ const createStarterBoard = async (userId: number) => {
       [lastBoardInserted, lastGroup1Inserted]
     );
 
-    console.log('Board & Group linked successfully!');
   } catch (error) {
-    console.error("Error during board and group creation:", error);
+    console.error("DB: Error during starter board and group creation:", error);
   }
 }
 

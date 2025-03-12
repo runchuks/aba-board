@@ -5,7 +5,7 @@ import { Board } from "@/types";
 import { useLocalSearchParams, useNavigation } from "expo-router";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { ScrollView, View, StyleSheet, TouchableOpacity, RefreshControl } from "react-native"
-import { useTheme, Text, Icon, Button, Portal } from "react-native-paper";
+import { useTheme, Text, Icon, Button, Portal, IconButton, Menu, Divider, Dialog } from "react-native-paper";
 import EditGroup from "@/components/EditGroup";
 import EditGroupName from "@/components/EditGroupName";
 import EditGroupColor from "@/components/EditGroupColor";
@@ -26,6 +26,7 @@ const EditBoard = () => {
     const [refreshing, setRefreshing] = useState<boolean>(false)
     const [editName, setEditName] = useState<string | null>(null)
     const [editColor, setEditColor] = useState<string | null>(null)
+    const [showDeleteDialog, setShowDeleteDialog] = useState<boolean>(false)
 
     const refreshBoard = useCallback(() => {
         setRefreshing(true)
@@ -47,6 +48,16 @@ const EditBoard = () => {
         dispatch(setEditingGroup(id))
     }, [dispatch])
 
+    const handleDeleteGroup = useCallback(() => {
+        if (editingGroup) {
+            STORAGE.deleteGroupById(editingGroup).then(() => {
+                setShowDeleteDialog(false)
+                dispatch(setEditingGroup(null))
+                refreshBoard()
+            })
+        }
+    }, [dispatch, editingGroup, refreshBoard])
+
     useEffect(() => {
         navigation.setOptions({
             title: t('Edit board'),
@@ -58,14 +69,23 @@ const EditBoard = () => {
                     }}
                 >
                     <Button
-                        mode="contained"
+                        mode="text"
                         icon="plus"
                         onPress={addGroup}
                     >
                         {t('Add group')}
                     </Button>
                     <Button
-                        mode="contained"
+                        mode="text"
+                        icon="trash-can-outline"
+                        onPress={() => setShowDeleteDialog(true)}
+                        textColor={theme.colors.error}
+                        disabled={!editingGroup}
+                    >
+                        {t('Delete group')}
+                    </Button>
+                    <Button
+                        mode="text"
                         icon="pencil"
                         disabled={!editingGroup}
                         onPress={() => {
@@ -77,7 +97,7 @@ const EditBoard = () => {
                         {t('Edit name')}
                     </Button>
                     <Button
-                        mode="contained"
+                        mode="text"
                         icon="palette"
                         disabled={!editingGroup}
                         onPress={() => {
@@ -89,10 +109,9 @@ const EditBoard = () => {
                         {t('Edit color')}
                     </Button>
                 </View>
-
             ),
         });
-    }, [addGroup, board?.groups, editingGroup, navigation, t])
+    }, [addGroup, board?.groups, editingGroup, navigation, t, theme.colors.error])
 
     useEffect(() => {
         refreshBoard()
@@ -214,6 +233,18 @@ const EditBoard = () => {
             <View style={style.tebContentWrap}>
                 {tabContents}
             </View>
+            <Portal>
+                <Dialog visible={showDeleteDialog} onDismiss={() => setShowDeleteDialog(false)}>
+                    <Dialog.Title>{t('Delete group')}</Dialog.Title>
+                    <Dialog.Content>
+                        <Text>{t('Are you sure you want to delete this group?')}</Text>
+                    </Dialog.Content>
+                    <Dialog.Actions>
+                        <Button onPress={() => setShowDeleteDialog(false)}>{t('Cancel')}</Button>
+                        <Button onPress={handleDeleteGroup}>{t('Delete')}</Button>
+                    </Dialog.Actions>
+                </Dialog>
+            </Portal>
         </View>
     )
 }

@@ -4,7 +4,7 @@ import { CameraView } from "expo-camera";
 import { useLocalSearchParams, useNavigation, useRouter } from "expo-router";
 import { FC, useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { View, Image } from "react-native";
-import { Button, Dialog, IconButton, Portal, Snackbar, Text, TextInput, useTheme } from "react-native-paper";
+import { Button, Dialog, IconButton, Portal, Snackbar, Surface, Text, TextInput, useTheme } from "react-native-paper";
 import { useDispatch, useSelector } from "react-redux";
 import * as FileSystem from 'expo-file-system';
 import STORAGE from "@/storage";
@@ -34,6 +34,7 @@ const EditItem: FC = () => {
     const isNewItem = itemId === '0';
     const item = isNewItem ? { name: '', image: '' } : items[parseInt(itemId, 10)];
     const [editName, setEditName] = useState<string>(item.name);
+    const [removeImage, setRemoveImage] = useState<boolean>(false);
 
     const takePicture = useCallback(() => {
         if (cameraReady) {
@@ -87,7 +88,7 @@ const EditItem: FC = () => {
         } else {
             await STORAGE.updateItemById(Number(itemId), {
                 name: editName,
-                ...(newPath ? { image: newPath } : {})
+                ...(newPath || removeImage ? { image: removeImage ? '' : newPath } : {})
             });
             dispatch(updateItemById({
                 id: itemId,
@@ -102,7 +103,7 @@ const EditItem: FC = () => {
         }
 
         setLoading(false);
-    }, [editName, itemId, tempImage, item.image, isNewItem, dispatch, router, editingGroup, editingColumn]);
+    }, [tempImage, isNewItem, itemId, item.image, editName, lang, dispatch, editingGroup, editingColumn, router, removeImage]);
 
     useEffect(() => {
         navigation.setOptions({
@@ -152,73 +153,91 @@ const EditItem: FC = () => {
                 />
             </View>
             <View style={{ flex: 1 }}>
-                <View style={{ width: '100%', aspectRatio: '1/1', justifyContent: 'center', alignItems: 'center', borderRadius: theme.roundness, position: 'relative' }} ref={cameraWrap}>
-                    {showCamera ? (
-                        <CameraView
-                            style={{ width: '100%', height: '100%', borderRadius: theme.roundness }}
-                            facing={"back"}
-                            autofocus="on"
-                            ratio="1:1"
-                            enableTorch={cameraFlashEnabled}
-                            onCameraReady={() => setCameraReady(true)}
-                            onMountError={(e) => console.log('Camera error', e)}
-                            animateShutter={false}
-                            ref={camera}
-                        />
-                    ) : item.image || tempImage ? (
-                        <Image
-                            source={{ uri: tempImage || item.image }}
-                            style={{ width: '100%', height: '100%', borderRadius: theme.roundness }}
-                        />
-                    ) : (
-                        <Text>{t('No image')}</Text>
-                    )}
+                <Surface>
+                    <View style={{ width: '100%', aspectRatio: '1/1', justifyContent: 'center', alignItems: 'center', borderRadius: theme.roundness, position: 'relative' }} ref={cameraWrap}>
+                        {showCamera ? (
+                            <CameraView
+                                style={{ width: '100%', height: '100%', borderRadius: theme.roundness }}
+                                facing={"back"}
+                                autofocus="on"
+                                ratio="1:1"
+                                enableTorch={cameraFlashEnabled}
+                                onCameraReady={() => setCameraReady(true)}
+                                onMountError={(e) => console.log('Camera error', e)}
+                                animateShutter={false}
+                                ref={camera}
+                            />
+                        ) : (item.image && !removeImage) || tempImage ? (
+                            <Image
+                                source={{ uri: tempImage || item.image }}
+                                style={{ width: '100%', height: '100%', borderRadius: theme.roundness }}
+                            />
+                        ) : (
+                            <Text>{t('No image')}</Text>
+                        )}
 
-                    {showCamera ? (
-                        <View style={{ position: 'absolute', width: '100%', bottom: 0, alignItems: 'center', justifyContent: 'space-between', flexDirection: 'row' }}>
-                            <IconButton
-                                icon="close"
-                                iconColor={theme.colors.error}
-                                onPress={() => {
-                                    setShowCamera(false);
-                                    setCameraFlashEnabled(false);
+                        {showCamera ? (
+                            <View style={{ position: 'absolute', width: '100%', bottom: 0, alignItems: 'center', justifyContent: 'space-between', flexDirection: 'row' }}>
+                                <IconButton
+                                    icon="close"
+                                    iconColor={theme.colors.error}
+                                    onPress={() => {
+                                        setShowCamera(false);
+                                        setCameraFlashEnabled(false);
+                                    }}
+                                />
+                                <IconButton
+                                    icon="camera-iris"
+                                    iconColor={theme.colors.primary}
+                                    size={50}
+                                    onPress={() => {
+                                        takePicture();
+                                    }}
+                                />
+                                <IconButton
+                                    icon={cameraFlashEnabled ? 'flash' : 'flash-off'}
+                                    iconColor={theme.colors.secondary}
+                                    onPress={() => {
+                                        setCameraFlashEnabled(!cameraFlashEnabled);
+                                    }}
+                                />
+                            </View>
+                        ) : (
+                            <View
+                                style={{
+                                    position: 'absolute',
+                                    width: '100%',
+                                    bottom: 0,
+                                    flexDirection: 'row',
+                                    justifyContent: 'space-between',
+                                    gap: 10,
+                                    backgroundColor: theme.colors.backdrop,
+                                    paddingHorizontal: 10
                                 }}
-                            />
-                            <IconButton
-                                icon="camera-iris"
-                                iconColor={theme.colors.primary}
-                                size={50}
-                                onPress={() => {
-                                    takePicture();
-                                }}
-                            />
-                            <IconButton
-                                icon={cameraFlashEnabled ? 'flash' : 'flash-off'}
-                                iconColor={theme.colors.secondary}
-                                onPress={() => {
-                                    setCameraFlashEnabled(!cameraFlashEnabled);
-                                }}
-                            />
-                        </View>
-                    ) : (
-                        <View style={{ position: 'absolute', width: '100%', bottom: 0, flexDirection: 'row', justifyContent: 'space-between', gap: 10, backgroundColor: theme.colors.backdrop, paddingHorizontal: 10 }}>
-                            <IconButton
-                                icon={tempImage ? 'close' : 'trash-can-outline'}
-                                iconColor={theme.colors.error}
-                                onPress={() => {
-                                    if (tempImage) {
-                                        setTempImage('');
-                                    }
-                                }}
-                            />
-                            <IconButton
-                                icon="camera"
-                                iconColor={theme.colors.primary}
-                                onPress={() => setShowCamera(true)}
-                            />
-                        </View>
-                    )}
-                </View>
+                            >
+                                {!removeImage || tempImage ? (
+                                    <IconButton
+                                        icon={tempImage ? 'close' : 'trash-can-outline'}
+                                        iconColor={theme.colors.error}
+                                        onPress={() => {
+                                            if (tempImage) {
+                                                setTempImage('');
+                                            } else {
+                                                setRemoveImage(true);
+                                            }
+                                        }}
+
+                                    />
+                                ) : null}
+                                <IconButton
+                                    icon="camera"
+                                    iconColor={theme.colors.primary}
+                                    onPress={() => setShowCamera(true)}
+                                />
+                            </View>
+                        )}
+                    </View>
+                </Surface>
             </View>
             <Portal>
                 <Snackbar
