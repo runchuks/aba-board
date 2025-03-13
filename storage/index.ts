@@ -28,8 +28,8 @@ const initDb = async () => {
     await db.execAsync(
       `CREATE TABLE IF NOT EXISTS groups (
         id INTEGER PRIMARY KEY AUTOINCREMENT,
-        name TEXT
-        color TEXT
+        name TEXT,
+        color TEXT,
         lists TEXT
       );`
     );

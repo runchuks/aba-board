@@ -1,28 +1,23 @@
 import { useLocalSearchParams, useNavigation, useRouter } from "expo-router";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
-import { LayoutRectangle, ScrollView, StyleSheet, Text, TouchableOpacity, View } from "react-native"
-import Ionicons from '@expo/vector-icons/Ionicons';
-import MaterialCommunityIcons from '@expo/vector-icons/MaterialCommunityIcons';
+import { LayoutRectangle, ScrollView, StyleSheet, Text, View } from "react-native"
 import GroupSelector from "@/components/GroupSelector";
 import { Dimensions } from 'react-native';
 import STORAGE from "@/storage";
 import { Group } from "@/types";
 import CardColumn from "@/components/CardColumn";
-import Feather from '@expo/vector-icons/Feather';
 import { useDispatch, useSelector } from "react-redux";
-import { setEditingGroup, setItems, setLastDragged } from "@/store/slices/global";
+import { setEditingGroup, setItems } from "@/store/slices/global";
 import speak from "@/speak";
-import MaterialIcons from '@expo/vector-icons/MaterialIcons';
 import { DEFAULT_READ_LINE_HEIGHT, GROUP_HEIGHT, MAX_CARD_SIZE, MIN_CARD_SIZE } from "@/constants/global";
 import AntDesign from '@expo/vector-icons/AntDesign';
 import useTranslation from "@/localization";
 import { RootState } from "@/store";
-import { Button, IconButton, ToggleButton, useTheme } from "react-native-paper";
+import { FAB, IconButton, Modal, Portal, ToggleButton, useTheme } from "react-native-paper";
+import QuickAdd from "@/components/QuickAdd";
 
 const windowHeight = Dimensions.get('window').height;
 const windowWidth = Dimensions.get('window').width;
-
-// const COLUMN_HEIGHT = windowHeight - GROUP_HEIGHT - DEFAULT_READ_LINE_HEIGHT - 50;
 
 const Board = () => {
     const { userId } = useLocalSearchParams()
@@ -31,27 +26,21 @@ const Board = () => {
     const t = useTranslation()
     const dispatch = useDispatch()
     const theme = useTheme()
-    const { items, lang, voicesLoaded } = useSelector((state: RootState) => state.global)
+    const { items, lang, voicesLoaded, autoPlayDefaultValue, quickAddEnabled } = useSelector((state: RootState) => state.global)
 
     const [groups, setGroups] = useState<Group[]>([])
     const [activeGroupId, setActiveGroupId] = useState<number | null>(null)
     const [boardId, serBoardId] = useState<number | null>(null)
-
-    const [autoSpeak, setAutoSpeak] = useState<boolean>(true)
-
+    const [autoSpeak, setAutoSpeak] = useState<boolean>(autoPlayDefaultValue)
     const [currentText, setCurrentText] = useState<string>('');
-
     const [insideIds, setInsiteIds] = useState<number[]>([])
+    const [showQuickAddModal, setShowQuickAddModal] = useState<boolean>(false)
 
     const dropZoneRef = useRef<View>(null);
     const [layout, setLayout] = useState<LayoutRectangle | null>(null);
-
     const insideCards = useRef<Record<number, number | null>>({});
-
     const [readLineHeight, setReadLineHeight] = useState(DEFAULT_READ_LINE_HEIGHT)
-
     const [cardSize, setCardSize] = useState<number>(0);
-
     const [currentDraggedInside, setCurrentDraggedInside] = useState<number | null>(null)
 
     const activeGroup = useMemo(() => {
@@ -342,6 +331,39 @@ const Board = () => {
                     </View>
                 </View>
             </View>
+            <FAB
+                icon="shape-square-plus"
+                style={{
+                    position: 'absolute',
+                    margin: 16,
+                    left: 0,
+                    bottom: 0,
+                }}
+                visible={quickAddEnabled}
+                size={"small"}
+                onPress={() => {
+                    setShowQuickAddModal(true)
+                }}
+                variant="tertiary"
+            />
+            <Portal>
+                <Modal
+                    visible={showQuickAddModal}
+                    onDismiss={() => setShowQuickAddModal(false)}
+                    contentContainerStyle={{
+                        backgroundColor: 'white',
+                        aspectRatio: '1/1',
+                        width: windowHeight - 20,
+                        margin: 10
+                    }}
+                    style={{
+                        alignItems: "center"
+                    }}
+
+                >
+                    <QuickAdd groupId={activeGroupId} onDissmiss={() => setShowQuickAddModal(false)} />
+                </Modal>
+            </Portal>
         </View>
     )
 }

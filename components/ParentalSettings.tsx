@@ -1,12 +1,12 @@
 import useTranslation from "@/localization"
 import { RootState } from "@/store"
-import { setLocked, setMasterPin } from "@/store/slices/global"
-import { View } from "react-native"
+import { setLocked, setMasterPin, setQuickAddEnabled, setAutoPlayDefaultValue } from "@/store/slices/global"
+import { ScrollView, View } from "react-native"
 import { List, Switch, TextInput } from "react-native-paper"
 import { useDispatch, useSelector } from "react-redux"
 
 const ParentalSettings = () => {
-    const { locked, masterPin } = useSelector((state: RootState) => state.global)
+    const { locked, masterPin, quickAddEnabled, autoPlayDefaultValue } = useSelector((state: RootState) => state.global)
     const dispatch = useDispatch()
 
     const t = useTranslation()
@@ -15,8 +15,16 @@ const ParentalSettings = () => {
         dispatch(setLocked(!locked))
     }
 
+    const onToggleQuickAdd = () => {
+        dispatch(setQuickAddEnabled(!quickAddEnabled))
+    }
+
+    const onToggleAutoPlayDefaultValue = () => {
+        dispatch(setAutoPlayDefaultValue(!autoPlayDefaultValue))
+    }
+
     return (
-        <View>
+        <ScrollView style={{ paddingBottom: 65 }}>
             <List.Item
                 title={t('Locked with PIN')}
                 right={() => (
@@ -36,7 +44,19 @@ const ParentalSettings = () => {
                     />
                 )}
             />
-        </View>
+            <List.Item
+                title={t('Quick add enabled')}
+                right={() => (
+                    <Switch value={quickAddEnabled} onValueChange={onToggleQuickAdd} />
+                )}
+            />
+            <List.Item
+                title={t('Auto play default value')}
+                right={() => (
+                    <Switch value={autoPlayDefaultValue} onValueChange={onToggleAutoPlayDefaultValue} />
+                )}
+            />
+        </ScrollView>
     )
 }
 

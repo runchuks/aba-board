@@ -15,7 +15,9 @@ const initialState = {
     lastDragged: null,
     voicesLoaded: SecureStore.getItem('voicesLoaded') !== null ? Boolean(Number(SecureStore.getItem('voicesLoaded'))) : true,
     editingGroup: null,
-    editingColumn: null
+    editingColumn: null,
+    quickAddEnabled: SecureStore.getItem('quickAddEnabled') !== null ? Boolean(Number(SecureStore.getItem('quickAddEnabled'))) : false,
+    autoPlayDefaultValue: SecureStore.getItem('autoPlayDefaultValue') !== null ? Boolean(Number(SecureStore.getItem('autoPlayDefaultValue'))) : false,
 } as GlobalState
 
 const globalSlice = createSlice({
@@ -66,7 +68,15 @@ const globalSlice = createSlice({
     },
     setEditingColumn: (state, action: PayloadAction<number>) => {
       state.editingColumn = action.payload
-    }
+    },
+    setQuickAddEnabled: (state, action: PayloadAction<boolean>) => {
+      SecureStore.setItem('quickAddEnabled', action.payload ? '1' : '0')
+      state.quickAddEnabled = action.payload
+    },
+    setAutoPlayDefaultValue: (state, action: PayloadAction<boolean>) => {
+      SecureStore.setItem('autoPlayDefaultValue', action.payload ? '1' : '0')
+      state.autoPlayDefaultValue = action.payload
+    },
   },
 });
 
@@ -82,5 +92,7 @@ export const {
   setEditingGroup,
   setEditingColumn,
   updateItemById,
+  setQuickAddEnabled,
+  setAutoPlayDefaultValue,
 } = globalSlice.actions;
 export default globalSlice.reducer;

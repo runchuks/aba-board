@@ -18,6 +18,8 @@ export interface GlobalState {
     voicesLoaded: boolean
     editingGroup: number | null
     editingColumn: number | null
+    quickAddEnabled: boolean
+    autoPlayDefaultValue: boolean
 }
 
 export interface User {
