@@ -29,6 +29,7 @@ export interface User {
     added: number
     advanced: boolean
     archived: boolean
+    onRename: (id: number, currentName: string) => void
 }
 
 export interface AddUser {
