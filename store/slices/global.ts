@@ -11,8 +11,13 @@ const initialState = {
     items: {},
     speechLang: SecureStore.getItem('speechLang') || DEFAULT_LANG,
     speechSpeed: Number(SecureStore.getItem('speechSpeed')) || DEFAULT_SPPECH_SPEED,
-    locked: Boolean(Number(SecureStore.getItem('locked'))) || DEFAULT_LOCKED,
-    lastDragged: null
+    locked: SecureStore.getItem('locked') !== null ? Boolean(Number(SecureStore.getItem('locked'))) : DEFAULT_LOCKED,
+    lastDragged: null,
+    voicesLoaded: SecureStore.getItem('voicesLoaded') !== null ? Boolean(Number(SecureStore.getItem('voicesLoaded'))) : true,
+    editingGroup: null,
+    editingColumn: null,
+    quickAddEnabled: SecureStore.getItem('quickAddEnabled') !== null ? Boolean(Number(SecureStore.getItem('quickAddEnabled'))) : false,
+    autoPlayDefaultValue: SecureStore.getItem('autoPlayDefaultValue') !== null ? Boolean(Number(SecureStore.getItem('autoPlayDefaultValue'))) : false,
 } as GlobalState
 
 const globalSlice = createSlice({
@@ -42,10 +47,36 @@ const globalSlice = createSlice({
       SecureStore.setItem('locked', action.payload ? '1' : '0')
       state.locked = action.payload
     },
+    setVoicesLoaded: (state, action: PayloadAction<boolean>) => {
+      console.log('voices loaded', action)
+      SecureStore.setItem('voicesLoaded', action.payload ? '1' : '0')
+      state.voicesLoaded = action.payload
+    },
     setLastDragged: (state, action: PayloadAction<number | null>) => {
-      console.log('las dragged', action.payload)
       state.lastDragged = action.payload
-    }
+    },
+    setEditingGroup: (state, action: PayloadAction<number | null>) => {
+      console.log('setting editing group: ', action.payload)
+      state.editingGroup = action.payload
+    },
+    updateItemById: (state, action) => {
+      console.log(action.payload)
+      state.items[parseInt(action.payload.id, 10)] = {
+        ...state.items[action.payload.id],
+        ...action.payload.data
+      }
+    },
+    setEditingColumn: (state, action: PayloadAction<number>) => {
+      state.editingColumn = action.payload
+    },
+    setQuickAddEnabled: (state, action: PayloadAction<boolean>) => {
+      SecureStore.setItem('quickAddEnabled', action.payload ? '1' : '0')
+      state.quickAddEnabled = action.payload
+    },
+    setAutoPlayDefaultValue: (state, action: PayloadAction<boolean>) => {
+      SecureStore.setItem('autoPlayDefaultValue', action.payload ? '1' : '0')
+      state.autoPlayDefaultValue = action.payload
+    },
   },
 });
 
@@ -57,5 +88,11 @@ export const {
   setMasterPin,
   setLocked,
   setLastDragged,
+  setVoicesLoaded,
+  setEditingGroup,
+  setEditingColumn,
+  updateItemById,
+  setQuickAddEnabled,
+  setAutoPlayDefaultValue,
 } = globalSlice.actions;
 export default globalSlice.reducer;

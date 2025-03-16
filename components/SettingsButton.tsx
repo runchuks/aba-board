@@ -2,6 +2,7 @@ import useTranslation from "@/localization";
 import { useRouter } from "expo-router";
 import { TouchableOpacity } from "react-native"
 import AntDesign from '@expo/vector-icons/AntDesign';
+import { Appbar } from "react-native-paper";
 
 const SettingsButton = () => {
     const router = useRouter();
@@ -11,9 +12,7 @@ const SettingsButton = () => {
     }
 
     return (
-        <TouchableOpacity onPressIn={onPress}>
-            <AntDesign name="setting" size={24} color="black" />
-        </TouchableOpacity>
+        <Appbar.Action icon="cog-outline" onPress={onPress} />
     )
 }
 

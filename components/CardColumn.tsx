@@ -12,9 +12,10 @@ interface Props {
     activeCards: number[]
     cardSize: number
     last: boolean
+    currentDraggedInside: number | null
 }
 
-const CardColumn: FC<Props> = ({ ids, onDrag, onDrop, display, activeCards, cardSize, last }) => {
+const CardColumn: FC<Props> = ({ ids, onDrag, onDrop, display, activeCards, cardSize, last, currentDraggedInside }) => {
     const [items, setItems] = useState<Item[]>([])
     const [dimensions, setDimensions] = useState({ width: 0, height: 0 })
 
@@ -64,6 +65,7 @@ const CardColumn: FC<Props> = ({ ids, onDrag, onDrop, display, activeCards, card
                         top={top}
                         cardSize={cardSize}
                         image={item.image}
+                        active={activeCards.includes(item.id) || currentDraggedInside === item.id}
                     />
                 )
             })
