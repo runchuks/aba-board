@@ -90,7 +90,6 @@ const EditBoard = () => {
                         disabled={!editingGroup}
                         onPress={() => {
                             const currentName = board?.groups?.find(({ id }) => id === editingGroup)?.name
-                            console.log(currentName)
                             setEditName(currentName ?? null)
                         }}
                     >
