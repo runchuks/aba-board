@@ -21,8 +21,6 @@ export default function RootLayout() {
   const colorScheme = useColorScheme();
   const schema = SecureStore.getItem('themeColorSchema')
 
-  console.log({ colorScheme, schema })
-
   const paperTheme = useMemo(() => {
     switch (schema) {
       case 'auto':

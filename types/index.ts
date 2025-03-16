@@ -30,6 +30,7 @@ export interface User {
     advanced: boolean
     archived: boolean
     onRename: (id: number, currentName: string) => void
+    refreshUsers: () => void
 }
 
 export interface AddUser {

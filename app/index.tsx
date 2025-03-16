@@ -85,6 +85,7 @@ export default function Index() {
             {...user}
             onRename={onRename}
             key={user.id}
+            refreshUsers={refreshUsers}
         />)
     }, [users, onRename])
 
