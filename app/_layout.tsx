@@ -12,6 +12,7 @@ import { MD3DarkTheme, MD3LightTheme, PaperProvider, useTheme } from 'react-nati
 import Header from "@/components/Header";
 import * as SecureStore from 'expo-secure-store';
 import { useColorScheme } from "react-native";
+import * as NavigationBar from 'expo-navigation-bar';
 
 import { Skyflare } from "@/themes/skyflare";
 import { Playful } from "@/themes/playful";
@@ -70,6 +71,8 @@ export default function RootLayout() {
         return MD3LightTheme
     }
   }, [colorScheme, schema])
+
+  NavigationBar.setBehaviorAsync('overlay-swipe')
 
   useEffect(() => {
     STORAGE.initDb();
