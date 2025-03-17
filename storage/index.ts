@@ -28,8 +28,8 @@ const initDb = async () => {
     await db.execAsync(
       `CREATE TABLE IF NOT EXISTS groups (
         id INTEGER PRIMARY KEY AUTOINCREMENT,
-        name TEXT
-        color TEXT
+        name TEXT,
+        color TEXT,
         lists TEXT
       );`
     );
@@ -194,9 +194,8 @@ const createStarterBoard = async (userId: number) => {
     // Step 3: Insert new group
     const { lastInsertRowId: lastGroupInserted } = await db.runAsync(
       `INSERT INTO groups (name, color, lists) VALUES (?, ?, ?);`,
-      ['Actions', '#63a845', JSON.stringify([[],[],[]])]
+      ['Group 1', '#ffddc1', JSON.stringify([[],[],[]])]
     );
-    console.log("Group added successfully!", lastGroupInserted);
 
     // Step 4: Link board and group in the board_groups table
     await db.runAsync(
@@ -207,9 +206,8 @@ const createStarterBoard = async (userId: number) => {
 
     const { lastInsertRowId: lastGroup1Inserted } = await db.runAsync(
       `INSERT INTO groups (name, color, lists) VALUES (?, ?, ?);`,
-      ['Group 1', '#65a8c7', JSON.stringify([])]
+      ['Group 2', '#65a8c7', JSON.stringify([[],[],[]])]
     );
-    console.log("Group added successfully!", lastGroup1Inserted);
 
     // Step 4: Link board and group in the board_groups table
     await db.runAsync(
@@ -217,9 +215,8 @@ const createStarterBoard = async (userId: number) => {
       [lastBoardInserted, lastGroup1Inserted]
     );
 
-    console.log('Board & Group linked successfully!');
   } catch (error) {
-    console.error("Error during board and group creation:", error);
+    console.error("DB: Error during starter board and group creation:", error);
   }
 }
 
@@ -386,9 +383,11 @@ const addItem = async (name: string, lang: string, color = '', image = '') => {
       [name, image, color, lang]
     );
 
+    console.log(`DB: Added new item (${lastInsertRowId})`)
+
     return lastInsertRowId;
   } catch (error) {
-    console.error("Error inserting item:", error);
+    console.error("DB: Error inserting item:", error);
   }
 };
 
@@ -424,6 +423,8 @@ const updateItemById = async (itemId: number, updates: { name?: string; image?: 
       // Build dynamic SQL query
       const fields = [];
       const values = [];
+
+      console.log({itemId, updates})
   
       if (updates.name !== undefined) {
           fields.push("name = ?");
@@ -459,13 +460,15 @@ const getGroup = async (id: number) => {
 
     if (!result) return null
 
+    console.log(`DB: Fetched group by ID: ${id}`)
+
     return {
       ...result,
       lists: JSON.parse(result.lists)
     } as Group
     
   } catch (error) {
-      console.error("Error fetching group by ID:", error);
+      console.error("DB: Error fetching group by ID:", error);
       return null;
   }
 }
@@ -522,17 +525,82 @@ const enableForeignKeys = async () => {
   const db = await getDatabase();
   try {
     await db.runAsync('PRAGMA foreign_keys = ON;');
-    console.log("Foreign keys enabled!");
+    console.log("DB: Foreign keys enabled!");
   } catch (error) {
-    console.error("Error enabling foreign keys:", error);
+    console.error("DB: Error enabling foreign keys:", error);
   }
 };
 
 const migration = async () => {
 
 };
-  
-  
+
+const expectedSchema = {
+  users: [
+    { name: "id", type: "INTEGER", primaryKey: true, autoIncrement: true },
+    { name: "name", type: "TEXT" },
+    { name: "image", type: "TEXT" },
+    { name: "added", type: "INTEGER" },
+    { name: "advanced", type: "INTEGER", check: "CHECK (advanced IN (0,1))" },
+    { name: "archived", type: "INTEGER", check: "CHECK (archived IN (0,1))" },
+  ],
+  groups: [
+    { name: "id", type: "INTEGER", primaryKey: true, autoIncrement: true },
+    { name: "name", type: "TEXT" },
+    { name: "color", type: "TEXT" },
+    { name: "lists", type: "TEXT" },
+  ],
+  board: [
+    { name: "id", type: "INTEGER", primaryKey: true, autoIncrement: true },
+    { name: "userId", type: "INTEGER" },
+    { name: "added", type: "INTEGER" },
+    { name: "advanced", type: "INTEGER", check: "CHECK (advanced IN (0,1))" },
+    { name: "archived", type: "INTEGER", check: "CHECK (archived IN (0,1))" },
+  ],
+  board_groups: [
+    { name: "boardId", type: "INTEGER" },
+    { name: "groupId", type: "INTEGER" },
+  ],
+  items: [
+    { name: "id", type: "INTEGER", primaryKey: true, autoIncrement: true },
+    { name: "name", type: "TEXT" },
+    { name: "image", type: "TEXT" },
+    { name: "color", type: "TEXT" },
+    { name: "lang", type: "TEXT" },
+  ],
+};
+
+const checkDatabaseStructure = async () => {
+  const db = await getDatabase();
+
+  const missingColumns: Record<string, { name: string, type: string }[]> = {};
+
+  for (const [tableName, expectedColumns] of Object.entries(expectedSchema)) {
+    const result = await db.getAllAsync(`PRAGMA table_info(${tableName});`);
+    const existingColumns = result.map((row: any) => row.name);
+
+    const missing = expectedColumns
+      .filter((col) => !existingColumns.includes(col.name))
+      .map((col) => ({ name: col.name, type: col.type }));
+
+    if (missing.length > 0) {
+      missingColumns[tableName] = missing;
+    }
+  }
+
+  return missingColumns;
+};
+
+const addMissingColumns = async (missingColumns: Record<string, { name: string, type: string }[]>) => {
+  const db = await getDatabase();
+
+  for (const [tableName, columns] of Object.entries(missingColumns)) {
+    for (const column of columns) {
+      const sql = `ALTER TABLE ${tableName} ADD COLUMN ${column.name} ${column.type};`;
+      await db.execAsync(sql);
+    }
+  }
+};
 
 const STORAGE = {
   initDb,
@@ -556,6 +624,9 @@ const STORAGE = {
   getAllItemsAsRecord,
   deleteItemById,
   updateItemById,
+  checkDatabaseStructure,
+  addMissingColumns,
+  getDatabase,
 };
 
 export default STORAGE;

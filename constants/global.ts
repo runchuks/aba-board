@@ -1,55 +1,43 @@
 import { LANG } from "@/localization/constants";
 
-export const DEFAULT_PIN = '0000';
+export const DEFAULT_PIN = '0000'
+export const DEFAULT_LOCKED = false
 export const DEFAULT_LANG = LANG.EN
+export const DEFAULT_SPPECH_SPEED = 100
+export const MAX_CARD_SIZE = 300
+export const MIN_CARD_SIZE = 80
+export const GROUP_HEIGHT = 40
+export const DEFAULT_READ_LINE_HEIGHT = 120
+export const VOICE_TIMEOUT = 1000
+export const VOICE_MAX_ATTEMPTS = 5
 
-export const DEFAULT_STARTER_BOARD = {
-    groups: [
-        {
-            title: 'Actions',
-            color: '#63a845',
-            lists: [
-                [
-                    {
-                        title: 'I want',
-                        image: null,
-                        color: null,
-                        order: 0,
-                    },
-                    {
-                        title: 'I need',
-                        image: null,
-                        color: null,
-                        order: 1,
-                    }
-                ],
-                [
-                    {
-                        title: 'I dont want',
-                        image: null,
-                        color: null,
-                        order: 0,
-                    },
-                ],
-                []
-            ]
-        },
-        {
-            title: 'Group 1',
-            color: '#65a8c7',
-            lists: [
-                [
-                    {
-                        title: 'Apple',
-                        image: null,
-                        color: null,
-                        order: 0,
-                    },
-                    
-                ],
-                [],
-                []
-            ]
-        },
-    ]
-}
+export const THEMES = [
+    {
+        title: 'Light',
+        value: 'light'
+    },
+    {
+        title: 'Dark',
+        value: 'dark'
+    },
+    {
+        title: 'Amoled',
+        value: 'amoled'
+    },
+    {
+        title: 'Skyflare Dark',
+        value: 'skyflare-dark'
+    },
+    {
+        title: 'Skyflare Light',
+        value: 'skyflare-light'
+    },
+    {
+        title: 'Playful Dark',
+        value: 'playful-dark'
+    },
+    {
+        title: 'Playful Light',
+        value: 'playful-light'
+    }
+]

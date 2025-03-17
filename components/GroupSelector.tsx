@@ -1,5 +1,6 @@
 import { FC } from "react"
 import { StyleSheet, Text, TouchableOpacity, View } from "react-native"
+import { useTheme } from "react-native-paper"
 
 interface Props {
     title: string
@@ -9,16 +10,22 @@ interface Props {
 }
 
 const GroupSelector: FC<Props> = ({ title, color, onPress, active }) => {
+    const theme = useTheme()
     return (
         <TouchableOpacity
             style={[
                 style.wrap,
-                { backgroundColor: color },
+                {
+                    backgroundColor: color,
+                    borderColor: theme.colors.primaryContainer,
+                    borderBottomLeftRadius: theme.roundness,
+                    borderBottomRightRadius: theme.roundness
+                },
             ]}
             onPress={onPress}
         >
-            <Text 
-                numberOfLines={1} 
+            <Text
+                numberOfLines={1}
                 style={[
                     style.text,
                     active && style.active,
@@ -35,10 +42,12 @@ const style = StyleSheet.create({
         minWidth: 100,
         justifyContent: "center",
         alignItems: "center",
-        borderBottomLeftRadius: 20,
-        borderBottomRightRadius: 20,
         marginHorizontal: 3,
-        paddingHorizontal: 10
+        paddingHorizontal: 10,
+        height: '90%',
+        borderBottomWidth: 1,
+        borderLeftWidth: 1,
+        borderRightWidth: 1,
     },
     text: {
         fontSize: 16

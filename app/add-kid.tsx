@@ -1,23 +1,22 @@
 import STYLES from "@/constants/styles"
 import useTranslation from "@/localization"
 import STORAGE from "@/storage"
-import { setKids } from "@/store/slices/global"
+import { RootState } from "@/store"
 import { useNavigation, useRouter } from "expo-router"
 import { useEffect, useState } from "react"
 import { Text, StyleSheet, View, TextInput, Button, Alert } from "react-native"
-import { useDispatch, useSelector } from "react-redux"
+import { useSelector } from "react-redux"
 
 const AddKid = () => {
-    const {kids, lang} = useSelector(state => state.global)
+    const { lang } = useSelector((state: RootState) => state.global)
     const navigation = useNavigation()
     const t = useTranslation()
-    const dispatch = useDispatch()
     const router = useRouter()
     const [name, setName] = useState('')
 
     useEffect(() => {
         navigation.setOptions({ title: t('Add user') });
-    }, [lang])
+    }, [lang, navigation, t])
 
     const add = async () => {
         if (!name) {
@@ -33,7 +32,7 @@ const AddKid = () => {
         }).then(() => {
             router.back()
         })
-        
+
     }
 
     return (
@@ -47,7 +46,7 @@ const AddKid = () => {
                         style={STYLES.input}
                     />
                 </View>
-                <View style={{marginTop: 20}}>
+                <View style={{ marginTop: 20 }}>
                     <Button title={t('Add')} onPress={add} />
                 </View>
             </View>

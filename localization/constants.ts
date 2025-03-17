@@ -1,13 +1,16 @@
 import LV from './languages/lv-LV.json'
 import DE from './languages/de-DE.json'
+import UK from './languages/uk-UA.json'
+import { Language } from '@/types'
 
 export enum LANG {
     LV = 'lv-LV',
     EN = 'en-US',
     DE = 'de-DE',
+    UK = 'uk-UA',
 }
 
-export const LANGS = {
+export const LANGS: Record<LANG, Language> = {
     [LANG.LV]: {
         title: 'Latviešu',
         translations: LV,
@@ -22,5 +25,10 @@ export const LANGS = {
         title: 'Deutsch',
         translations: DE,
         value: LANG.DE,
-    }
+    },
+    [LANG.UK]: {
+        title: 'Українська',
+        translations: UK,
+        value: LANG.UK,
+    },
 }

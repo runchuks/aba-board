@@ -12,6 +12,14 @@ export interface GlobalState {
     masterPin: string
     items: Record<number, Item>
     speechLang: string
+    speechSpeed: number
+    locked: boolean
+    lastDragged: number | null
+    voicesLoaded: boolean
+    editingGroup: number | null
+    editingColumn: number | null
+    quickAddEnabled: boolean
+    autoPlayDefaultValue: boolean
 }
 
 export interface User {
@@ -21,6 +29,8 @@ export interface User {
     added: number
     advanced: boolean
     archived: boolean
+    onRename: (id: number, currentName: string) => void
+    refreshUsers: () => void
 }
 
 export interface AddUser {
@@ -67,4 +77,10 @@ export interface Board {
     advanced: boolean
     archived: boolean
     groups?: Group[]
+}
+
+export interface Language {
+    title: string,
+    translations: Record<string, string> | null,
+    value: LANG,
 }

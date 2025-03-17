@@ -1,8 +1,8 @@
 {
   "expo": {
-    "name": "aba-board",
+    "name": "ABA",
     "slug": "aba-board",
-    "version": "1.0.0",
+    "version": "1.0.4",
     "orientation": "landscape",
     "icon": "./assets/images/icon.png",
     "scheme": "aba-board",
@@ -14,7 +14,7 @@
     "android": {
       "adaptiveIcon": {
         "foregroundImage": "./assets/images/adaptive-icon.png",
-        "backgroundColor": "#ffffff"
+        "backgroundColor": "#e3987d"
       },
       "permissions": [
         "android.permission.CAMERA",

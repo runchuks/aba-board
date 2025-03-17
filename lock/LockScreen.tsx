@@ -1,44 +1,44 @@
 import useTranslation from "@/localization";
-import { View, StyleSheet, Text, TextInput, Button, TouchableOpacity } from "react-native"
-import Ionicons from '@expo/vector-icons/Ionicons';
-import Feather from '@expo/vector-icons/Feather';
-import Entypo from '@expo/vector-icons/Entypo';
+import { View, StyleSheet, TouchableOpacity } from "react-native"
 import { useEffect, useMemo } from "react";
+import { useTheme, Text, Icon } from "react-native-paper";
 
 interface Props {
     setPin: (value: string) => void,
     handleUnlock: () => void,
     pin: string,
+    maxLenght: number
 }
 
-const LockScreen: React.FC<Props> = ({setPin, handleUnlock, pin}) => {
+const LockScreen: React.FC<Props> = ({ setPin, handleUnlock, pin, maxLenght }) => {
     const t = useTranslation()
+    const theme = useTheme()
 
     const maskedPin = useMemo(() => {
         const returnVals = [];
-        for (let i=0; i<pin.length; i++) {
+        for (let i = 0; i < pin.length; i++) {
             returnVals.push(
-                <Entypo name="dot-single" size={40} color="black" key={i} />
+                <Icon source="circle-small" size={40} color={theme.colors.primary} key={i} />
             )
         }
-        if (returnVals.length < 4) {
-            for (let i=returnVals.length; i<4; i++) {
+        if (returnVals.length < maxLenght) {
+            for (let i = returnVals.length; i < maxLenght; i++) {
                 returnVals.push(
-                    <Entypo name="dot-single" size={40} color="#d6d6d6" key={i} />
+                    <Icon source="circle-small" size={40} key={i} />
                 )
             }
         }
         return returnVals;
-    }, [pin])
+    }, [maxLenght, pin.length, theme.colors.primary])
 
     useEffect(() => {
-        if (pin.length === 4) {
+        if (pin.length === maxLenght) {
             handleUnlock()
         }
     }, [pin])
 
     const addToPin = (value: string) => {
-        if (pin.length < 4) {
+        if (pin.length < maxLenght) {
             setPin(pin + value);
         }
     }
@@ -50,7 +50,7 @@ const LockScreen: React.FC<Props> = ({setPin, handleUnlock, pin}) => {
     }
 
     return (
-        <View style={styles.container}>
+        <View style={[styles.container, { backgroundColor: theme.colors.background }]}>
             <Text>{t('Enter PIN')}:</Text>
             <Text
                 style={{
@@ -60,41 +60,41 @@ const LockScreen: React.FC<Props> = ({setPin, handleUnlock, pin}) => {
                 {maskedPin}
             </Text>
             <View style={styles.numberPadWrap}>
-                <TouchableOpacity style={styles.numberPadButton} onPress={() => addToPin('1')}>
+                <TouchableOpacity style={[styles.numberPadButton, { backgroundColor: theme.colors.primaryContainer }]} onPress={() => addToPin('1')}>
                     <Text>1</Text>
                 </TouchableOpacity>
-                <TouchableOpacity style={styles.numberPadButton} onPress={() => addToPin('2')}>
+                <TouchableOpacity style={[styles.numberPadButton, { backgroundColor: theme.colors.primaryContainer }]} onPress={() => addToPin('2')}>
                     <Text>2</Text>
                 </TouchableOpacity>
-                <TouchableOpacity style={styles.numberPadButton} onPress={() => addToPin('3')}>
+                <TouchableOpacity style={[styles.numberPadButton, { backgroundColor: theme.colors.primaryContainer }]} onPress={() => addToPin('3')}>
                     <Text>3</Text>
                 </TouchableOpacity>
-                <TouchableOpacity style={styles.numberPadButton} onPress={() => addToPin('4')}>
+                <TouchableOpacity style={[styles.numberPadButton, { backgroundColor: theme.colors.primaryContainer }]} onPress={() => addToPin('4')}>
                     <Text>4</Text>
                 </TouchableOpacity>
-                <TouchableOpacity style={styles.numberPadButton} onPress={() => addToPin('5')}>
+                <TouchableOpacity style={[styles.numberPadButton, { backgroundColor: theme.colors.primaryContainer }]} onPress={() => addToPin('5')}>
                     <Text>5</Text>
                 </TouchableOpacity>
-                <TouchableOpacity style={styles.numberPadButton} onPress={() => addToPin('6')}>
+                <TouchableOpacity style={[styles.numberPadButton, { backgroundColor: theme.colors.primaryContainer }]} onPress={() => addToPin('6')}>
                     <Text>6</Text>
                 </TouchableOpacity>
-                <TouchableOpacity style={styles.numberPadButton} onPress={() => addToPin('7')}>
+                <TouchableOpacity style={[styles.numberPadButton, { backgroundColor: theme.colors.primaryContainer }]} onPress={() => addToPin('7')}>
                     <Text>7</Text>
                 </TouchableOpacity>
-                <TouchableOpacity style={styles.numberPadButton} onPress={() => addToPin('8')}>
+                <TouchableOpacity style={[styles.numberPadButton, { backgroundColor: theme.colors.primaryContainer }]} onPress={() => addToPin('8')}>
                     <Text>8</Text>
                 </TouchableOpacity>
-                <TouchableOpacity style={styles.numberPadButton} onPress={() => addToPin('9')}>
+                <TouchableOpacity style={[styles.numberPadButton, { backgroundColor: theme.colors.primaryContainer }]} onPress={() => addToPin('9')}>
                     <Text>9</Text>
                 </TouchableOpacity>
-                <TouchableOpacity style={styles.numberPadButton} onPress={removeLastLetter}>
-                    <Ionicons name="backspace" size={24} color="black" />
+                <TouchableOpacity style={[styles.numberPadButton, { backgroundColor: theme.colors.primaryContainer }]} onPress={removeLastLetter}>
+                    <Icon source="backspace" size={24} />
                 </TouchableOpacity>
-                <TouchableOpacity style={styles.numberPadButton} onPress={() => addToPin('0')}>
+                <TouchableOpacity style={[styles.numberPadButton, { backgroundColor: theme.colors.primaryContainer }]} onPress={() => addToPin('0')}>
                     <Text>0</Text>
                 </TouchableOpacity>
-                <TouchableOpacity style={styles.numberPadButton} onPress={handleUnlock}>
-                    <Feather name="check" size={24} color="black" />
+                <TouchableOpacity style={[styles.numberPadButton, { backgroundColor: theme.colors.primaryContainer }]} onPress={handleUnlock}>
+                    <Icon source="check" size={24} />
                 </TouchableOpacity>
             </View>
         </View>
@@ -130,6 +130,6 @@ const styles = StyleSheet.create({
         backgroundColor: "#c2c2c2",
         borderRadius: 5,
     }
-  });
+});
 
 export default LockScreen

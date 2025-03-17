@@ -1,20 +1,18 @@
 import useTranslation from "@/localization";
 import { useRouter } from "expo-router";
 import { TouchableOpacity } from "react-native"
-import EvilIcons from '@expo/vector-icons/EvilIcons';
+import AntDesign from '@expo/vector-icons/AntDesign';
+import { Appbar } from "react-native-paper";
 
 const SettingsButton = () => {
     const router = useRouter();
-    const t = useTranslation();
 
     const onPress = () => {
         router.navigate('/settings');
     }
-    
+
     return (
-        <TouchableOpacity onPressIn={onPress}>
-            <EvilIcons name="gear" size={24} color="black" />
-        </TouchableOpacity>
+        <Appbar.Action icon="cog-outline" onPress={onPress} />
     )
 }
 

@@ -1,14 +1,9 @@
 import STYLES from "@/constants/styles";
 import useTranslation from "@/localization";
-import { setKids } from "@/store/slices/global";
 import { useLocalSearchParams, useNavigation, useRouter } from "expo-router";
 import { useEffect, useState } from "react";
 import { Text, View, TextInput, Button, StyleSheet, Alert, Keyboard } from "react-native"
-import { useDispatch, useSelector } from "react-redux";
-import * as SecureStore from 'expo-secure-store';
-import { DEFAULT_STARTER_BOARD } from "@/constants/global";
 import STORAGE from "@/storage";
-import * as Speech from 'expo-speech';
 
 const EditKid = () => {
     const { id } = useLocalSearchParams();
@@ -23,9 +18,9 @@ const EditKid = () => {
         STORAGE.getUserById(Number(id)).then(user => {
             setName(user.name)
         })
-        .catch(() => {
-            router.back();
-        })
+            .catch(() => {
+                router.back();
+            })
     }, [id, navigation]);
 
     useEffect(() => {
@@ -39,10 +34,10 @@ const EditKid = () => {
         STORAGE.updateUserById(id, {
             name
         }).then(() => {
-            Alert.alert(t('User edited'),'',[
+            Alert.alert(t('User edited'), '', [
                 {
                     text: t('Ok'),
-                    onPress: () => {},
+                    onPress: () => { },
                 },
                 {
                     text: t('Back to settings'),
@@ -53,10 +48,10 @@ const EditKid = () => {
     }
 
     const deleteUser = () => {
-        Alert.alert(t('Delete user?'), '',[
+        Alert.alert(t('Delete user?'), '', [
             {
                 text: t('Cancel'),
-                onPress: () => {},
+                onPress: () => { },
             },
             {
                 text: t('Delete'),
@@ -64,10 +59,10 @@ const EditKid = () => {
                     STORAGE.deleteUserById(id).then(() => {
                         router.back()
                     })
-                    .catch(() => {
-                        router.back()
-                    })
-                    
+                        .catch(() => {
+                            router.back()
+                        })
+
                 },
                 style: "destructive"
             },
@@ -75,10 +70,10 @@ const EditKid = () => {
     }
 
     const reset = () => {
-        Alert.alert(t('Reset board?'), '',[
+        Alert.alert(t('Reset board?'), '', [
             {
                 text: t('Cancel'),
-                onPress: () => {},
+                onPress: () => { },
             },
             {
                 text: t('Reset'),
@@ -102,7 +97,7 @@ const EditKid = () => {
                         style={STYLES.input}
                     />
                 </View>
-                <View style={{marginTop: 20, gap: 10}}>
+                <View style={{ marginTop: 20, gap: 10 }}>
                     <Button title={t('Edit')} onPress={edit} />
                     <Button title={t('Reset board')} color="orange" onPress={reset} disabled={!resetBoardActive} />
                     <Button title={t('Delete')} onPress={deleteUser} color="red" />
