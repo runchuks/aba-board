@@ -18,8 +18,9 @@
   "submit": {
     "production": {},
     "development": {
-      "developmentClient": true,
-      "distribution": "internal"
+      "track": "internal",
+      "releaseStatus": "inProgress",
+      "rollout": 1
     }
   }
 }
