@@ -18,9 +18,11 @@
   "submit": {
     "production": {},
     "development": {
-      "track": "internal",
-      "releaseStatus": "inProgress",
-      "rollout": 1
+      "android": {
+        "track": "internal",
+        "releaseStatus": "inProgress",
+        "rollout": 1
+      }
     }
   }
 }
