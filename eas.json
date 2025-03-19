@@ -17,7 +17,7 @@
   },
   "submit": {
     "production": {},
-    "development": {
+    "preview": {
       "android": {
         "track": "internal",
         "releaseStatus": "inProgress",
