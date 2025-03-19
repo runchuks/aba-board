@@ -2,7 +2,7 @@
   "expo": {
     "name": "ABA",
     "slug": "aba-board",
-    "version": "1.0.4",
+    "version": "1.0.5",
     "orientation": "landscape",
     "icon": "./assets/images/icon.png",
     "scheme": "aba-board",
@@ -52,13 +52,18 @@
           "microphonePermission": "Allow $(PRODUCT_NAME) to access your microphone",
           "recordAudioAndroid": true
         }
+      ],
+      [
+        "expo-navigation-bar",
+        {
+          "position": "relative",
+          "visibility": "hidden",
+          "behavior": "inset-swipe"
+        }
       ]
     ],
     "experiments": {
       "typedRoutes": true
-    },
-    "androidNavigationBar": {
-      "visible": "immersive"
     },
     "extra": {
       "router": {
