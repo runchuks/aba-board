@@ -65,6 +65,9 @@
     "experiments": {
       "typedRoutes": true
     },
+    "androidNavigationBar": {
+      "visible": "immersive"
+    },
     "extra": {
       "router": {
         "origin": false
