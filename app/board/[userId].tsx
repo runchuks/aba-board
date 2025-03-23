@@ -354,7 +354,8 @@ const Board = () => {
                         backgroundColor: 'white',
                         aspectRatio: '1/1',
                         width: windowHeight - 20,
-                        margin: 10
+                        margin: 10,
+                        borderRadius: theme.roundness,
                     }}
                     style={{
                         alignItems: "center"

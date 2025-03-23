@@ -1,5 +1,5 @@
 import useTranslation from "@/localization";
-import { CameraView } from "expo-camera";
+import { CameraView, useCameraPermissions } from "expo-camera";
 import { FC, useCallback, useRef, useState } from "react";
 import { View } from "react-native";
 import { Button, IconButton, Text, TextInput, useTheme } from "react-native-paper";
@@ -18,12 +18,14 @@ enum STEP {
 const QuickAdd: FC<Props> = ({ groupId, onDissmiss }) => {
     const theme = useTheme()
     const t = useTranslation()
+    const [permission, requestPermission] = useCameraPermissions();
 
     const [step, setStep] = useState<STEP>(STEP.PICTURE)
     const [cameraFlashEnabled, setCameraFlashEnabled] = useState<boolean>(false)
     const [cameraReady, setCameraReady] = useState<boolean>(false)
     const [tempImage, setTempImage] = useState<string>('')
     const [tempName, setTempName] = useState<string>('')
+    const [cameraError, setCameraError] = useState<string | null>(null);
 
     const camera = useRef<CameraView>(null)
 
@@ -76,17 +78,34 @@ const QuickAdd: FC<Props> = ({ groupId, onDissmiss }) => {
                         height: '100%',
                     }}
                 >
-                    <CameraView
-                        style={{ width: '100%', height: '100%' }}
-                        facing={"back"}
-                        autofocus="on"
-                        ratio="1:1"
-                        enableTorch={cameraFlashEnabled}
-                        onCameraReady={() => setCameraReady(true)}
-                        onMountError={(e) => console.log('Camera error', e)}
-                        animateShutter={false}
-                        ref={camera}
-                    />
+                    {!permission ? (
+                        <Text>{t('Loading permissions')}</Text>
+                    ) : (
+                        !permission.granted ? (
+                            <Button
+                                onPress={requestPermission}
+                                mode="contained"
+                            >{t('Request camera permission')}</Button>
+                        ) : (
+                            cameraError ? (
+                                <Text style={{ color: theme.colors.error }}>{t('Camera error.')}</Text>
+                            ) : (
+                                <CameraView
+                                    style={{ width: '100%', height: '100%', borderRadius: theme.roundness }}
+                                    facing="back"
+                                    autofocus="on"
+                                    ratio="1:1"
+                                    enableTorch={cameraFlashEnabled}
+                                    onCameraReady={() => setCameraReady(true)}
+                                    onMountError={(e) => setCameraError(e.message)}
+                                    animateShutter={false}
+                                    ref={camera}
+                                />
+                            )
+
+                        )
+
+                    )}
                     <View
                         style={{
                             position: 'absolute',
@@ -130,6 +149,8 @@ const QuickAdd: FC<Props> = ({ groupId, onDissmiss }) => {
                         height: '100%',
                         backgroundColor: theme.colors.background,
                         padding: 20,
+                        borderRadius: theme.roundness,
+                        overflow: 'hidden'
                     }}
                 >
                     <TextInput

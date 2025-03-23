@@ -1,10 +1,10 @@
 import useTranslation from "@/localization";
 import { RootState } from "@/store";
-import { CameraView } from "expo-camera";
+import { CameraView, useCameraPermissions } from "expo-camera";
 import { useLocalSearchParams, useNavigation, useRouter } from "expo-router";
 import { FC, useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { View, Image } from "react-native";
-import { Button, Dialog, IconButton, Portal, Snackbar, Surface, Text, TextInput, useTheme } from "react-native-paper";
+import { Button, Dialog, Icon, IconButton, Portal, Snackbar, Surface, Text, TextInput, useTheme } from "react-native-paper";
 import { useDispatch, useSelector } from "react-redux";
 import * as FileSystem from 'expo-file-system';
 import STORAGE from "@/storage";
@@ -18,6 +18,7 @@ const EditItem: FC = () => {
     const navigation = useNavigation();
     const router = useRouter();
     const t = useTranslation();
+    const [permission, requestPermission] = useCameraPermissions();
 
     const [cameraFlashEnabled, setCameraFlashEnabled] = useState<boolean>(false);
     const [cameraReady, setCameraReady] = useState<boolean>(false);
@@ -27,6 +28,7 @@ const EditItem: FC = () => {
     const [showChanges, setShowChanges] = useState<boolean>(false);
     const [hasChanges, setHasChanges] = useState<boolean>(false);
     const [loading, setLoading] = useState<boolean>(false);
+    const [cameraError, setCameraError] = useState<string | null>(null);
 
     const camera = useRef<CameraView>(null);
     const cameraWrap = useRef(null);
@@ -113,7 +115,7 @@ const EditItem: FC = () => {
                     <Button
                         mode="contained"
                         icon="close"
-                        style={{ backgroundColor: theme.colors.error }}
+                        style={{ backgroundColor: isNewItem ? theme.colors.error : theme.colors.secondary }}
                         onPress={() => {
                             if (hasChanges) {
                                 setShowChanges(true);
@@ -156,24 +158,42 @@ const EditItem: FC = () => {
                 <Surface>
                     <View style={{ width: '100%', aspectRatio: '1/1', justifyContent: 'center', alignItems: 'center', borderRadius: theme.roundness, position: 'relative' }} ref={cameraWrap}>
                         {showCamera ? (
-                            <CameraView
-                                style={{ width: '100%', height: '100%', borderRadius: theme.roundness }}
-                                facing={"back"}
-                                autofocus="on"
-                                ratio="1:1"
-                                enableTorch={cameraFlashEnabled}
-                                onCameraReady={() => setCameraReady(true)}
-                                onMountError={(e) => console.log('Camera error', e)}
-                                animateShutter={false}
-                                ref={camera}
-                            />
+                            !permission ? (
+                                <Text>{t('Loading permissions')}</Text>
+                            ) : (
+                                !permission.granted ? (
+                                    <Button
+                                        onPress={requestPermission}
+                                        mode="contained"
+                                    >{t('Request camera permission')}</Button>
+                                ) : (
+                                    cameraError ? (
+                                        <Text style={{ color: theme.colors.error }}>{t('Camera error.')}</Text>
+                                    ) : (
+                                        <CameraView
+                                            style={{ width: '100%', height: '100%', borderRadius: theme.roundness }}
+                                            facing="back"
+                                            autofocus="on"
+                                            ratio="1:1"
+                                            enableTorch={cameraFlashEnabled}
+                                            onCameraReady={() => setCameraReady(true)}
+                                            onMountError={(e) => setCameraError(e.message)}
+                                            animateShutter={false}
+                                            ref={camera}
+                                        />
+                                    )
+
+                                )
+
+                            )
                         ) : (item.image && !removeImage) || tempImage ? (
                             <Image
                                 source={{ uri: tempImage || item.image }}
                                 style={{ width: '100%', height: '100%', borderRadius: theme.roundness }}
                             />
                         ) : (
-                            <Text>{t('No image')}</Text>
+                            <Icon source="image-off-outline" size={50} color={theme.colors.onSurfaceVariant} />
+                            // <Text>{t('No image')}</Text>
                         )}
 
                         {showCamera ? (
@@ -182,6 +202,7 @@ const EditItem: FC = () => {
                                     icon="close"
                                     iconColor={theme.colors.error}
                                     onPress={() => {
+                                        setCameraError(null);
                                         setShowCamera(false);
                                         setCameraFlashEnabled(false);
                                     }}
@@ -190,6 +211,7 @@ const EditItem: FC = () => {
                                     icon="camera-iris"
                                     iconColor={theme.colors.primary}
                                     size={50}
+                                    disabled={!cameraReady || !!cameraError}
                                     onPress={() => {
                                         takePicture();
                                     }}
@@ -197,6 +219,7 @@ const EditItem: FC = () => {
                                 <IconButton
                                     icon={cameraFlashEnabled ? 'flash' : 'flash-off'}
                                     iconColor={theme.colors.secondary}
+                                    disabled={!cameraReady || !!cameraError}
                                     onPress={() => {
                                         setCameraFlashEnabled(!cameraFlashEnabled);
                                     }}
