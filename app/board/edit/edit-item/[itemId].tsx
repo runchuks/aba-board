@@ -9,6 +9,7 @@ import { useDispatch, useSelector } from "react-redux";
 import * as FileSystem from 'expo-file-system';
 import STORAGE from "@/storage";
 import { setItems, updateItemById } from "@/store/slices/global";
+import * as ImagePicker from 'expo-image-picker';
 
 const EditItem: FC = () => {
     const theme = useTheme();
@@ -140,7 +141,28 @@ const EditItem: FC = () => {
                 </View>
             )
         });
-    }, [navigation, t, saveItem, theme.colors.error, loading, router, hasChanges, isNewItem]);
+    }, [navigation, t, saveItem, theme.colors.error, loading, router, hasChanges, isNewItem, theme.colors.secondary]);
+
+    useEffect(() => {
+        console.log('Camera error', cameraError)
+    }, [cameraError])
+
+    const pickImage = async () => {
+        let result = await ImagePicker.launchImageLibraryAsync({
+            mediaTypes: ['images'],
+            allowsEditing: true,
+            aspect: [1, 1],
+            quality: 1,
+        });
+
+        if (!result.canceled) {
+            setTempImage(result.assets[0].uri);
+            setShowCamera(false);
+            setCameraFlashEnabled(false);
+            setHasChanges(true);
+            setCameraError(null);
+        }
+    };
 
     return (
         <View style={{ backgroundColor: theme.colors.background, height: '100%', paddingBottom: 65, paddingHorizontal: 20, paddingTop: 20, gap: 20, flexDirection: 'row' }}>
@@ -168,7 +190,13 @@ const EditItem: FC = () => {
                                     >{t('Request camera permission')}</Button>
                                 ) : (
                                     cameraError ? (
-                                        <Text style={{ color: theme.colors.error }}>{t('Camera error.')}</Text>
+                                        <>
+                                            <Text style={{ color: theme.colors.error, marginBottom: 5 }}>{t('Camera error.')}</Text>
+                                            <Button
+                                                mode="contained"
+                                                onPress={pickImage}
+                                            >{t('Add from gallery')}</Button>
+                                        </>
                                     ) : (
                                         <CameraView
                                             style={{ width: '100%', height: '100%', borderRadius: theme.roundness }}
@@ -251,11 +279,23 @@ const EditItem: FC = () => {
                                         }}
                                     />
                                 )}
-                                <IconButton
-                                    icon="camera"
-                                    iconColor={theme.colors.primary}
-                                    onPress={() => setShowCamera(true)}
-                                />
+                                <View
+                                    style={{
+                                        flexDirection: 'row',
+                                        gap: 10
+                                    }}
+                                >
+                                    <IconButton
+                                        icon="camera"
+                                        iconColor={theme.colors.primary}
+                                        onPress={() => setShowCamera(true)}
+                                    />
+                                    <IconButton
+                                        icon="folder-multiple-image"
+                                        iconColor={theme.colors.primary}
+                                        onPress={pickImage}
+                                    />
+                                </View>
                             </View>
                         )}
                     </View>

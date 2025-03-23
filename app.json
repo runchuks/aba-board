@@ -54,6 +54,12 @@
         }
       ],
       [
+        "expo-image-picker",
+        {
+          "photosPermission": "Allow $(PRODUCT_NAME) to access your gallery"
+        }
+      ],
+      [
         "expo-navigation-bar",
         {
           "position": "relative",

@@ -4,6 +4,7 @@ import { FC, useCallback, useRef, useState } from "react";
 import { View } from "react-native";
 import { Button, IconButton, Text, TextInput, useTheme } from "react-native-paper";
 import * as FileSystem from 'expo-file-system';
+import * as ImagePicker from 'expo-image-picker';
 
 interface Props {
     groupId: number | null
@@ -36,12 +37,29 @@ const QuickAdd: FC<Props> = ({ groupId, onDissmiss }) => {
                     setTempImage(data.uri);
                     setCameraFlashEnabled(false);
                     setStep(STEP.NAME)
+                    setCameraError(null);
                 }
             }).catch((e) => {
                 console.log('Error taking picture', e);
             });
         }
     }, [cameraReady]);
+
+    const pickImage = async () => {
+        let result = await ImagePicker.launchImageLibraryAsync({
+            mediaTypes: ['images'],
+            allowsEditing: true,
+            aspect: [1, 1],
+            quality: 1,
+        });
+
+        if (!result.canceled) {
+            setTempImage(result.assets[0].uri);
+            setCameraFlashEnabled(false);
+            setStep(STEP.NAME)
+            setCameraError(null);
+        }
+    };
 
     const addItem = useCallback(async () => {
         // let newPath = '';
@@ -88,7 +106,20 @@ const QuickAdd: FC<Props> = ({ groupId, onDissmiss }) => {
                             >{t('Request camera permission')}</Button>
                         ) : (
                             cameraError ? (
-                                <Text style={{ color: theme.colors.error }}>{t('Camera error.')}</Text>
+                                <View
+                                    style={{
+                                        width: '100%',
+                                        height: '100%',
+                                        alignItems: 'center',
+                                        justifyContent: 'center',
+                                    }}
+                                >
+                                    <Text style={{ color: theme.colors.error, marginBottom: 5 }}>{t('Camera error.')}</Text>
+                                    <Button
+                                        mode="contained"
+                                        onPress={pickImage}
+                                    >{t('Add from gallery')}</Button>
+                                </View>
                             ) : (
                                 <CameraView
                                     style={{ width: '100%', height: '100%', borderRadius: theme.roundness }}
@@ -117,15 +148,16 @@ const QuickAdd: FC<Props> = ({ groupId, onDissmiss }) => {
                             backgroundColor: theme.colors.backdrop
                         }}
                     >
-                        <View
-                            style={{
-                                width: 50
-                            }}
+                        <IconButton
+                            icon="folder-multiple-image"
+                            iconColor={theme.colors.primary}
+                            onPress={pickImage}
                         />
                         <IconButton
                             icon="camera-iris"
                             iconColor={theme.colors.primary}
                             size={50}
+                            disabled={!cameraReady || cameraError !== null}
                             onPress={() => {
                                 takePicture();
                             }}

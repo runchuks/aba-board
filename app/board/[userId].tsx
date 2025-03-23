@@ -111,7 +111,7 @@ const Board = () => {
         });
     }, [readLineHeight]);
 
-    const handleDrag = (id: number, x: number, y: number) => {
+    const handleDrag = useCallback((id: number, x: number, y: number) => {
         if (layout) {
             if (x >= layout.x && x <= layout.x + layout.width && y >= layout.y && y <= layout.y + layout.height) {
                 insideCards.current[id] = x
@@ -121,7 +121,7 @@ const Board = () => {
                 setCurrentDraggedInside(null)
             }
         }
-    };
+    }, [layout]);
 
     const onDrop = (id: number) => {
         console.log('dropped', id)
@@ -242,9 +242,12 @@ const Board = () => {
                 </View>
             )
         })
-    }, [groups, activeGroupId, insideIds, cardSize, currentDraggedInside]);
+    }, [cardSize, groups, columnHeight, handleDrag, activeGroupId, insideIds, currentDraggedInside]);
 
     const restartBoard = () => {
+        setInsiteIds([])
+        setCurrentDraggedInside(null)
+        insideCards.current = {}
         refreshBoard()
     }
 
@@ -254,6 +257,7 @@ const Board = () => {
                 <IconButton
                     icon="arrow-left"
                     onPress={goBack}
+                    iconColor={theme.colors.primary}
                 />
                 <Text>{activeGroup?.name}</Text>
                 <View
@@ -264,10 +268,12 @@ const Board = () => {
                     <IconButton
                         icon="refresh"
                         onPress={restartBoard}
+                        iconColor={theme.colors.primary}
                     />
                     <IconButton
                         icon="pencil"
                         onPress={goToEditMode}
+                        iconColor={theme.colors.primary}
                     />
                 </View>
             </View>
