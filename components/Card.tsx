@@ -1,5 +1,6 @@
+import { RootState } from '@/store';
 import { setLastDragged } from '@/store/slices/global';
-import React, { FC, useEffect, useRef, useState } from 'react';
+import React, { FC, useRef, useState } from 'react';
 import { View, StyleSheet, PanResponder, Animated, Text, ImageBackground } from 'react-native';
 import { useTheme } from 'react-native-paper';
 import { useDispatch, useSelector } from 'react-redux';
@@ -19,19 +20,13 @@ interface Props {
 }
 
 const Card: FC<Props> = ({ id, name, onDrag, onDrop, display, index, left, top, cardSize, image, active }) => {
-  const { lastDragged } = useSelector(state => state.global)
+  const { lastDragged } = useSelector((state: RootState) => state.global)
   const dispatch = useDispatch()
   const theme = useTheme();
   const position = useRef(new Animated.ValueXY()).current;
   const [dragging, setDragging] = useState(false);
 
   const dragged = useRef<boolean>(false);
-
-  // useEffect(() => {
-  //   if (dragging) {
-  //     dragged.current = true;
-  //   }
-  // }, [dragging])
 
   const panResponder = useRef(
     PanResponder.create({
