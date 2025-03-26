@@ -35,6 +35,7 @@ const Board = () => {
     const [currentText, setCurrentText] = useState<string>('');
     const [insideIds, setInsiteIds] = useState<number[]>([])
     const [showQuickAddModal, setShowQuickAddModal] = useState<boolean>(false)
+    const [dragging, setDragging] = useState<boolean>(false)
 
     const dropZoneRef = useRef<View>(null);
     const [layout, setLayout] = useState<LayoutRectangle | null>(null);
@@ -57,7 +58,6 @@ const Board = () => {
     }, [activeGroupId, groups]);
 
     const refreshBoard = async () => {
-        setActiveGroupId(null)
         setGroups([])
         setCurrentText('')
         setInsiteIds([])
@@ -68,7 +68,9 @@ const Board = () => {
                 serBoardId(board.id)
                 if (board.groups) {
                     setGroups(board.groups)
-                    setActiveGroupId(board.groups[0].id)
+                    if (activeGroupId === null) {
+                        setActiveGroupId(board.groups[0].id)
+                    }
                 }
             }
             STORAGE.getAllItemsAsRecord().then(allItems => {
@@ -113,6 +115,7 @@ const Board = () => {
 
     const handleDrag = useCallback((id: number, x: number, y: number) => {
         if (layout) {
+            setDragging(true);
             if (x >= layout.x && x <= layout.x + layout.width && y >= layout.y && y <= layout.y + layout.height) {
                 insideCards.current[id] = x
                 setCurrentDraggedInside(id)
@@ -124,7 +127,7 @@ const Board = () => {
     }, [layout]);
 
     const onDrop = (id: number) => {
-        console.log('dropped', id)
+        setDragging(false);
         const sorted = Object.entries(insideCards.current)
             .filter(([, value]) => value !== null) // Exclude null values
             .sort(([, a], [, b]) => a - b)         // Sort by val
@@ -309,7 +312,10 @@ const Board = () => {
                         style.readLine,
                         {
                             height: readLineHeight,
-                            backgroundColor: theme.colors.background
+                            backgroundColor: theme.colors.background,
+                            borderWidth: 1,
+                            borderColor: dragging ? theme.colors.primary : 'transparent',
+                            borderStyle: 'dashed'
                         }
                     ]}
                     ref={dropZoneRef}
@@ -368,7 +374,14 @@ const Board = () => {
                     }}
 
                 >
-                    <QuickAdd groupId={activeGroupId} onDissmiss={() => setShowQuickAddModal(false)} />
+                    <QuickAdd
+                        groupId={activeGroupId}
+                        onDissmiss={() => setShowQuickAddModal(false)}
+                        onAdd={() => {
+                            setShowQuickAddModal(false)
+                            refreshBoard()
+                        }}
+                    />
                 </Modal>
             </Portal>
         </View>

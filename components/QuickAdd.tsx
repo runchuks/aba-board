@@ -5,10 +5,15 @@ import { View } from "react-native";
 import { Button, IconButton, Text, TextInput, useTheme } from "react-native-paper";
 import * as FileSystem from 'expo-file-system';
 import * as ImagePicker from 'expo-image-picker';
+import STORAGE from "@/storage";
+import { useDispatch, useSelector } from "react-redux";
+import { RootState } from "@/store";
+import { setItems } from "@/store/slices/global";
 
 interface Props {
     groupId: number | null
     onDissmiss: () => void
+    onAdd: () => void
 }
 
 enum STEP {
@@ -16,10 +21,12 @@ enum STEP {
     NAME
 }
 
-const QuickAdd: FC<Props> = ({ groupId, onDissmiss }) => {
+const QuickAdd: FC<Props> = ({ groupId, onDissmiss, onAdd }) => {
     const theme = useTheme()
     const t = useTranslation()
     const [permission, requestPermission] = useCameraPermissions();
+    const { lang, editingGroup } = useSelector((state: RootState) => state.global);
+    const dispatch = useDispatch();
 
     const [step, setStep] = useState<STEP>(STEP.PICTURE)
     const [cameraFlashEnabled, setCameraFlashEnabled] = useState<boolean>(false)
@@ -62,27 +69,40 @@ const QuickAdd: FC<Props> = ({ groupId, onDissmiss }) => {
     };
 
     const addItem = useCallback(async () => {
-        // let newPath = '';
+        let newPath = '';
 
-        // if (tempImage) {
-        //     const now = Date.now();
-        //     newPath = FileSystem.documentDirectory + `image-${itemId}-${now}.jpg`;
+        if (tempImage) {
+            const now = Date.now();
+            newPath = FileSystem.documentDirectory + `image-${now}.jpg`;
 
-        //     const { exists } = await FileSystem.getInfoAsync(item.image);
-        //     if (exists) {
-        //         await FileSystem.deleteAsync(item.image);
-        //     }
+            await FileSystem.copyAsync({
+                from: tempImage,
+                to: newPath
+            });
+        }
 
-        //     await FileSystem.copyAsync({
-        //         from: tempImage,
-        //         to: newPath
-        //     });
-        // }
+        const newId = await STORAGE.addItem(tempName, lang, '', newPath);
+        dispatch(setItems(await STORAGE.getAllItemsAsRecord()));
 
-        // TO-DO
+        if (editingGroup && newId) {
+            // Update the group with the new item ID
+            const group = await STORAGE.getGroup(editingGroup);
+            if (group) {
+                // Find the index of the array with the least items
+                const leastItemsIndex = group.lists.reduce((minIndex, list, index, lists) => {
+                    return list.length < lists[minIndex].length ? index : minIndex;
+                }, 0);
 
-        onDissmiss()
-    }, [onDissmiss]);
+                // Add the new item ID to the list with the least items
+                group.lists[leastItemsIndex].push(newId);
+
+                await STORAGE.updateGroupById(editingGroup, { lists: JSON.stringify(group.lists) });
+                dispatch(setItems(await STORAGE.getAllItemsAsRecord()));
+            }
+        }
+
+        onAdd()
+    }, [dispatch, editingGroup, lang, onAdd, tempImage, tempName]);
 
     if (groupId === null) return null
 
@@ -112,13 +132,21 @@ const QuickAdd: FC<Props> = ({ groupId, onDissmiss }) => {
                                         height: '100%',
                                         alignItems: 'center',
                                         justifyContent: 'center',
+                                        marginTop: -40
                                     }}
                                 >
-                                    <Text style={{ color: theme.colors.error, marginBottom: 5 }}>{t('Camera error.')}</Text>
+                                    <Text style={{ color: theme.colors.error, marginBottom: 5, fontSize: 20 }}>{t('Camera error.')}</Text>
                                     <Button
                                         mode="contained"
                                         onPress={pickImage}
                                     >{t('Add from gallery')}</Button>
+                                    <Text style={{ color: theme.colors.onPrimary, marginVertical: 5 }}>{t('or')}</Text>
+                                    <Button
+                                        mode="contained"
+                                        onPress={() => setStep(STEP.NAME)}
+                                    >
+                                        {t('Skip image')}
+                                    </Button>
                                 </View>
                             ) : (
                                 <CameraView
@@ -170,6 +198,23 @@ const QuickAdd: FC<Props> = ({ groupId, onDissmiss }) => {
                             }}
                         />
                     </View>
+                    {!cameraError ? (
+                        <View
+                            style={{
+                                position: 'absolute',
+                                height: 50,
+                                top: 5,
+                                right: 5
+                            }}
+                        >
+                            <Button
+                                mode="outlined"
+                                onPress={() => setStep(STEP.NAME)}
+                            >
+                                {t('Skip image')}
+                            </Button>
+                        </View>
+                    ) : null}
                 </View>
 
             )

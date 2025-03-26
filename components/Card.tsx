@@ -1,6 +1,7 @@
 import { setLastDragged } from '@/store/slices/global';
 import React, { FC, useEffect, useRef, useState } from 'react';
 import { View, StyleSheet, PanResponder, Animated, Text, ImageBackground } from 'react-native';
+import { useTheme } from 'react-native-paper';
 import { useDispatch, useSelector } from 'react-redux';
 
 interface Props {
@@ -20,6 +21,7 @@ interface Props {
 const Card: FC<Props> = ({ id, name, onDrag, onDrop, display, index, left, top, cardSize, image, active }) => {
   const { lastDragged } = useSelector(state => state.global)
   const dispatch = useDispatch()
+  const theme = useTheme();
   const position = useRef(new Animated.ValueXY()).current;
   const [dragging, setDragging] = useState(false);
 
@@ -86,6 +88,7 @@ const Card: FC<Props> = ({ id, name, onDrag, onDrop, display, index, left, top, 
           width: cardSize - 20,
           height: cardSize - 20,
           backgroundColor: image ? 'rgba(126, 126, 126, 0.55)' : '#fff',
+          borderColor: theme.colors.primary,
         },
         dragging && style.dragging,
         active && style.active
@@ -135,7 +138,6 @@ const style = StyleSheet.create({
     borderRadius: 5,
     justifyContent: 'center',
     alignItems: 'center',
-    borderColor: 'rgba(126, 126, 126, 0.55)',
     overflow: 'hidden',
   },
   dragging: {

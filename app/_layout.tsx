@@ -90,9 +90,9 @@ export default function RootLayout() {
   }, [])
 
   return (
-    <PaperProvider theme={{ ...paperTheme }}>
-      <GestureHandlerRootView>
-        <Provider store={store}>
+    <Provider store={store}>
+      <PaperProvider theme={{ ...paperTheme }}>
+        <GestureHandlerRootView>
           <StatusBar
             hidden
           />
@@ -101,8 +101,8 @@ export default function RootLayout() {
               header: (props) => (<Header {...props} />)
             }}
           />
-        </Provider>
-      </GestureHandlerRootView>
-    </PaperProvider>
+        </GestureHandlerRootView>
+      </PaperProvider>
+    </Provider >
   );
 }
