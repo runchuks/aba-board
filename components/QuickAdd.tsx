@@ -135,7 +135,7 @@ const QuickAdd: FC<Props> = ({ groupId, onDissmiss, onAdd }) => {
                                         marginTop: -40
                                     }}
                                 >
-                                    <Text style={{ color: theme.colors.error, marginBottom: 5, fontSize: 20 }}>{t('Camera error.')}</Text>
+                                    <Text style={{ color: theme.colors.error, marginBottom: 5, fontSize: 20 }}>{t('Camera error')}</Text>
                                     <Button
                                         mode="contained"
                                         onPress={pickImage}

@@ -44,8 +44,9 @@ const Card: FC<Props> = ({ id, name, onDrag, onDrop, display, index, left, top, 
       },
       onPanResponderMove: Animated.event([null, { dx: position.x, dy: position.y }], {
         useNativeDriver: false,
-        listener: (event, gesture) => {
-          onDrag(id, gesture.moveX, gesture.moveY); // Pass current coordinates
+        listener: (event: { nativeEvent: { pageX: number; pageY: number } }) => {
+          const gesture = event.nativeEvent;
+          onDrag(id, gesture.pageX, gesture.pageY); // Pass current coordinates
         },
       }),
       onPanResponderRelease: () => {

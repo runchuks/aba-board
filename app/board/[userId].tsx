@@ -39,6 +39,8 @@ const Board = () => {
 
     const dropZoneRef = useRef<View>(null);
     const [layout, setLayout] = useState<LayoutRectangle | null>(null);
+    const [readLinePosX, setReadLinePosX] = useState<{ min: number, max: number }>({ min: 0, max: 0 });
+    const [readLinePosY, setReadLinePosY] = useState<{ min: number, max: number }>({ min: 0, max: 0 });
     const insideCards = useRef<Record<number, number | null>>({});
     const [readLineHeight, setReadLineHeight] = useState(DEFAULT_READ_LINE_HEIGHT)
     const [cardSize, setCardSize] = useState<number>(0);
@@ -110,13 +112,19 @@ const Board = () => {
     useEffect(() => {
         dropZoneRef.current?.measure((x, y, width, height, pageX, pageY) => {
             setLayout({ x: pageX, y: pageY, width, height });
+            setReadLinePosX({ min: pageX - cardSize / 2, max: pageX + width + cardSize / 2 });
+            setReadLinePosY({ min: pageY - cardSize / 2, max: pageY + height + cardSize / 2 });
         });
-    }, [readLineHeight]);
+    }, [readLineHeight, cardSize]);
 
     const handleDrag = useCallback((id: number, x: number, y: number) => {
         if (layout) {
             setDragging(true);
-            if (x >= layout.x && x <= layout.x + layout.width && y >= layout.y && y <= layout.y + layout.height) {
+
+            const isInX = x >= readLinePosX.min && x <= readLinePosX.max
+            const isInY = y >= readLinePosY.min && y <= readLinePosY.max
+
+            if (isInX && isInY) {
                 insideCards.current[id] = x
                 setCurrentDraggedInside(id)
             } else {
@@ -124,7 +132,7 @@ const Board = () => {
                 setCurrentDraggedInside(null)
             }
         }
-    }, [layout]);
+    }, [layout, readLinePosX.max, readLinePosX.min, readLinePosY.max, readLinePosY.min]);
 
     const onDrop = (id: number) => {
         setDragging(false);
@@ -151,7 +159,6 @@ const Board = () => {
                 text = text + ' '
             }
         });
-        console.log(text)
         setCurrentText(text)
     }, [insideIds, items])
 

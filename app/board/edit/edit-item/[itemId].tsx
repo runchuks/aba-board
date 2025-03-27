@@ -191,7 +191,7 @@ const EditItem: FC = () => {
                                 ) : (
                                     cameraError ? (
                                         <>
-                                            <Text style={{ color: theme.colors.error, marginBottom: 5 }}>{t('Camera error.')}</Text>
+                                            <Text style={{ color: theme.colors.error, marginBottom: 5 }}>{t('Camera error')}</Text>
                                             <Button
                                                 mode="contained"
                                                 onPress={pickImage}
