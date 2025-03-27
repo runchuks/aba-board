@@ -60,7 +60,8 @@
     "react-redux": "^9.2.0",
     "reanimated-color-picker": "^3.0.6",
     "expo-application": "~6.0.2",
-    "expo-navigation-bar": "~4.0.8"
+    "expo-navigation-bar": "~4.0.8",
+    "expo-image-picker": "~16.0.6"
   },
   "devDependencies": {
     "@babel/core": "^7.25.2",

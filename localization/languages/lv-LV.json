@@ -83,5 +83,9 @@
     "Rename": "Pārdēvēt",
     "Take picture": "Uzņemt attēlu",
     "Delete user": "Dzēst lietotāju",
-    "Are you sure you want to delete this user?": "Vai tiešām vēlaties dzēst šo lietotāju?"
+    "Are you sure you want to delete this user?": "Vai tiešām vēlaties dzēst šo lietotāju?",
+    "Camera error": "Kameras kļūda",
+    "Add from gallery": "Pievienot no galerijas",
+    "or": "vai",
+    "Skip image": "Izlaist attēlu"
 }

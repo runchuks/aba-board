@@ -35,9 +35,12 @@ const Board = () => {
     const [currentText, setCurrentText] = useState<string>('');
     const [insideIds, setInsiteIds] = useState<number[]>([])
     const [showQuickAddModal, setShowQuickAddModal] = useState<boolean>(false)
+    const [dragging, setDragging] = useState<boolean>(false)
 
     const dropZoneRef = useRef<View>(null);
     const [layout, setLayout] = useState<LayoutRectangle | null>(null);
+    const [readLinePosX, setReadLinePosX] = useState<{ min: number, max: number }>({ min: 0, max: 0 });
+    const [readLinePosY, setReadLinePosY] = useState<{ min: number, max: number }>({ min: 0, max: 0 });
     const insideCards = useRef<Record<number, number | null>>({});
     const [readLineHeight, setReadLineHeight] = useState(DEFAULT_READ_LINE_HEIGHT)
     const [cardSize, setCardSize] = useState<number>(0);
@@ -57,7 +60,6 @@ const Board = () => {
     }, [activeGroupId, groups]);
 
     const refreshBoard = async () => {
-        setActiveGroupId(null)
         setGroups([])
         setCurrentText('')
         setInsiteIds([])
@@ -68,7 +70,9 @@ const Board = () => {
                 serBoardId(board.id)
                 if (board.groups) {
                     setGroups(board.groups)
-                    setActiveGroupId(board.groups[0].id)
+                    if (activeGroupId === null) {
+                        setActiveGroupId(board.groups[0].id)
+                    }
                 }
             }
             STORAGE.getAllItemsAsRecord().then(allItems => {
@@ -108,12 +112,19 @@ const Board = () => {
     useEffect(() => {
         dropZoneRef.current?.measure((x, y, width, height, pageX, pageY) => {
             setLayout({ x: pageX, y: pageY, width, height });
+            setReadLinePosX({ min: pageX - cardSize / 2, max: pageX + width + cardSize / 2 });
+            setReadLinePosY({ min: pageY - cardSize / 2, max: pageY + height + cardSize / 2 });
         });
-    }, [readLineHeight]);
+    }, [readLineHeight, cardSize]);
 
-    const handleDrag = (id: number, x: number, y: number) => {
+    const handleDrag = useCallback((id: number, x: number, y: number) => {
         if (layout) {
-            if (x >= layout.x && x <= layout.x + layout.width && y >= layout.y && y <= layout.y + layout.height) {
+            setDragging(true);
+
+            const isInX = x >= readLinePosX.min && x <= readLinePosX.max
+            const isInY = y >= readLinePosY.min && y <= readLinePosY.max
+
+            if (isInX && isInY) {
                 insideCards.current[id] = x
                 setCurrentDraggedInside(id)
             } else {
@@ -121,10 +132,10 @@ const Board = () => {
                 setCurrentDraggedInside(null)
             }
         }
-    };
+    }, [layout, readLinePosX.max, readLinePosX.min, readLinePosY.max, readLinePosY.min]);
 
     const onDrop = (id: number) => {
-        console.log('dropped', id)
+        setDragging(false);
         const sorted = Object.entries(insideCards.current)
             .filter(([, value]) => value !== null) // Exclude null values
             .sort(([, a], [, b]) => a - b)         // Sort by val
@@ -148,7 +159,6 @@ const Board = () => {
                 text = text + ' '
             }
         });
-        console.log(text)
         setCurrentText(text)
     }, [insideIds, items])
 
@@ -242,9 +252,12 @@ const Board = () => {
                 </View>
             )
         })
-    }, [groups, activeGroupId, insideIds, cardSize, currentDraggedInside]);
+    }, [cardSize, groups, columnHeight, handleDrag, activeGroupId, insideIds, currentDraggedInside]);
 
     const restartBoard = () => {
+        setInsiteIds([])
+        setCurrentDraggedInside(null)
+        insideCards.current = {}
         refreshBoard()
     }
 
@@ -254,6 +267,7 @@ const Board = () => {
                 <IconButton
                     icon="arrow-left"
                     onPress={goBack}
+                    iconColor={theme.colors.primary}
                 />
                 <Text>{activeGroup?.name}</Text>
                 <View
@@ -264,10 +278,12 @@ const Board = () => {
                     <IconButton
                         icon="refresh"
                         onPress={restartBoard}
+                        iconColor={theme.colors.primary}
                     />
                     <IconButton
                         icon="pencil"
                         onPress={goToEditMode}
+                        iconColor={theme.colors.primary}
                     />
                 </View>
             </View>
@@ -303,7 +319,10 @@ const Board = () => {
                         style.readLine,
                         {
                             height: readLineHeight,
-                            backgroundColor: theme.colors.background
+                            backgroundColor: theme.colors.background,
+                            borderWidth: 1,
+                            borderColor: dragging ? theme.colors.primary : 'transparent',
+                            borderStyle: 'dashed'
                         }
                     ]}
                     ref={dropZoneRef}
@@ -354,14 +373,22 @@ const Board = () => {
                         backgroundColor: 'white',
                         aspectRatio: '1/1',
                         width: windowHeight - 20,
-                        margin: 10
+                        margin: 10,
+                        borderRadius: theme.roundness,
                     }}
                     style={{
                         alignItems: "center"
                     }}
 
                 >
-                    <QuickAdd groupId={activeGroupId} onDissmiss={() => setShowQuickAddModal(false)} />
+                    <QuickAdd
+                        groupId={activeGroupId}
+                        onDissmiss={() => setShowQuickAddModal(false)}
+                        onAdd={() => {
+                            setShowQuickAddModal(false)
+                            refreshBoard()
+                        }}
+                    />
                 </Modal>
             </Portal>
         </View>
