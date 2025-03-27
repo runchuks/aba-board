@@ -18,7 +18,7 @@ const AboutSettings: FC = () => {
                 style={{ width: 50, height: 50, marginBottom: 20, marginTop: 20 }}
             />
             <Text>ABA Therpay board</Text>
-            <Text>Version: 1.0.7</Text>
+            <Text>Version: 1.0.8</Text>
         </View>
     )
 }
