@@ -7,11 +7,12 @@ import { useCallback, useEffect, useMemo, useState } from "react";
 import { RefreshControl, ScrollView, StyleSheet, View } from "react-native";
 import { useSelector } from "react-redux";
 import { User } from "@/types";
-import { Card, Icon, useTheme, Text, Portal, Modal, TextInput, Button } from 'react-native-paper';
+import { Card, Icon, useTheme, Portal, Modal, TextInput, Button } from 'react-native-paper';
+import { RootState } from "@/store";
 
 
 export default function Index() {
-    const { lang } = useSelector(state => state.global)
+    const { lang } = useSelector((state: RootState) => state.global)
     const navigation = useNavigation()
     const t = useTranslation()
     const theme = useTheme();
@@ -136,7 +137,7 @@ export default function Index() {
                         <TextInput
                             value={tempUserName}
                             onChangeText={setTempUserName}
-                            label={t('Username')}
+                            label={t('Name')}
                         />
                         <Button
                             mode="contained"
