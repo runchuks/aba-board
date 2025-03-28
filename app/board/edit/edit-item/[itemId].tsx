@@ -10,6 +10,7 @@ import * as FileSystem from 'expo-file-system';
 import STORAGE from "@/storage";
 import { setItems, updateItemById } from "@/store/slices/global";
 import * as ImagePicker from 'expo-image-picker';
+import AudioRecorder from "@/components/AudioRecorder";
 
 const EditItem: FC = () => {
     const theme = useTheme();
@@ -175,6 +176,7 @@ const EditItem: FC = () => {
                         setEditName(val);
                     }}
                 />
+                <AudioRecorder />
             </View>
             <View style={{ flex: 1 }}>
                 <Surface>

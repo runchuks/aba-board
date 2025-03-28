@@ -66,6 +66,12 @@
           "visibility": "hidden",
           "behavior": "inset-swipe"
         }
+      ],
+      [
+        "expo-audio",
+        {
+          "microphonePermission": "Allow $(PRODUCT_NAME) to access your microphone."
+        }
       ]
     ],
     "experiments": {
