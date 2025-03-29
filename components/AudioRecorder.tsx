@@ -1,36 +1,57 @@
 import { Alert, View } from "react-native"
-import { Icon, IconButton } from "react-native-paper"
-import { useAudioRecorder, RecordingOptions, AudioModule, RecordingPresets } from 'expo-audio';
-import { useEffect } from "react";
+import { Button, Icon, IconButton, useTheme } from "react-native-paper"
+import { useEffect, useMemo, useState } from "react";
 
 const AudioRecorder: React.FC = () => {
-    useEffect(() => {
-        (async () => {
-            const status = await AudioModule.requestRecordingPermissionsAsync();
-            if (!status.granted) {
-                Alert.alert('Permission to access microphone was denied');
-            }
-        })();
-    }, []);
+
+    const [isRecording, setIsRecording] = useState<boolean>(false);
+
+
+    const record = (): void => {
+
+
+    };
+
+    const stopRecording = async () => {
+
+
+    };
+
+    const play = () => {
+
+    };
 
     return (
         <View
             style={{
                 flexDirection: 'row',
+                marginTop: 10,
             }}
         >
-            <View
-                style={{
-                    flex: 1
-                }}
+            <Button
+                mode="contained"
+                icon="play"
+                onPress={play}
             >
-
-            </View>
-            <IconButton
+                Play
+            </Button>
+            <Button
+                mode="contained"
                 icon="microphone"
-                size={50}
-                onPress={() => console.log('Record')}
-            />
+                onPress={
+                    () => {
+                        if (isRecording) {
+                            stopRecording();
+                        } else {
+                            record();
+                        }
+                    }
+                }
+            >
+                {isRecording
+                    ? 'Recording...'
+                    : 'Record sound'}
+            </Button>
         </View>
     )
 }
