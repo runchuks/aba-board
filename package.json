@@ -62,7 +62,8 @@
     "expo-application": "~6.0.2",
     "expo-navigation-bar": "~4.0.8",
     "expo-image-picker": "~16.0.6",
-    "expo-audio": "~0.3.5"
+    "expo-audio": "~0.3.5",
+    "expo-av": "~15.0.2"
   },
   "devDependencies": {
     "@babel/core": "^7.25.2",
