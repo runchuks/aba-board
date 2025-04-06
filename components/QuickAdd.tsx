@@ -120,10 +120,19 @@ const QuickAdd: FC<Props> = ({ groupId, onDissmiss, onAdd }) => {
                         <Text>{t('Loading permissions')}</Text>
                     ) : (
                         !permission.granted ? (
-                            <Button
-                                onPress={requestPermission}
-                                mode="contained"
-                            >{t('Request camera permission')}</Button>
+                            <View
+                                style={{
+                                    width: '100%',
+                                    height: '100%',
+                                    alignItems: 'center',
+                                    justifyContent: 'center',
+                                }}
+                            >
+                                <Button
+                                    onPress={requestPermission}
+                                    mode="contained"
+                                >{t('Request camera permission')}</Button>
+                            </View>
                         ) : (
                             cameraError ? (
                                 <View
