@@ -19,6 +19,7 @@ const AboutSettings: FC = () => {
             />
             <Text>ABA Therpay board</Text>
             <Text>Version: 1.0.7</Text>
+            <Text>{`:)`}</Text>
         </View>
     )
 }
