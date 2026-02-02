@@ -22,7 +22,7 @@ interface Props {
     name: string
     id: number
     color: string
-    lists: Item[][]
+    lists: Item[]
     listsMap: number[][]
     onRefresh: () => void
 }

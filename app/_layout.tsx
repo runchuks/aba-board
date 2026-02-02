@@ -5,7 +5,7 @@ import STORAGE from "@/storage";
 import { store } from "@/store";
 import { Stack } from "expo-router";
 import { StatusBar } from "expo-status-bar";
-import { useEffect, useMemo } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { GestureHandlerRootView } from "react-native-gesture-handler";
 import { Provider } from "react-redux";
 import { MD3DarkTheme, MD3LightTheme, PaperProvider, useTheme } from 'react-native-paper';
@@ -74,20 +74,31 @@ export default function RootLayout() {
 
   NavigationBar.setBehaviorAsync('overlay-swipe')
 
+  const [dbReady, setDbReady] = useState(false);
+
   useEffect(() => {
-    STORAGE.initDb();
-    STORAGE.enableForeignKeys();
-    STORAGE.migration();
-    STORAGE.checkDatabaseStructure().then((missingColumns) => {
-      if (Object.keys(missingColumns).length === 0) {
-        console.log("Database structure is correct.");
-      } else {
-        STORAGE.addMissingColumns(missingColumns);
+    (async () => {
+      try {
+        await STORAGE.initDb();
+        await STORAGE.enableForeignKeys();
+        await STORAGE.migration();
+        const missingColumns = await STORAGE.checkDatabaseStructure();
+        if (Object.keys(missingColumns).length === 0) {
+          console.log("Database structure is correct.");
+        } else {
+          await STORAGE.addMissingColumns(missingColumns);
+        }
+        setDbReady(true);
+      } catch (error) {
+        console.error("Error initializing database:", error);
+        setDbReady(true); // allow app to render even if DB checks fail
       }
-    }).catch((error) => {
-      console.error("Error checking database structure:", error);
-    });
+    })();
   }, [])
+
+  if (!dbReady) {
+    return null;
+  }
 
   return (
     <Provider store={store}>

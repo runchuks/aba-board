@@ -59,6 +59,28 @@ const Board = () => {
         return g?.color || 'transparent'
     }, [activeGroupId, groups]);
 
+    useEffect(() => {
+        if (groups.length > 0) {
+            groups.forEach(group => {
+                if (group.lists.length > 0) {
+                    if (Array.isArray(group.lists[0])) {
+                        const newList = [
+                            ...group.lists[0],
+                            ...group.lists[1],
+                            ...group.lists[2],
+                        ]
+                        STORAGE.updateGroupById(group.id, {
+                            lists: JSON.stringify(newList)
+                        })
+                    } else {
+                        console.log('list ok')
+                        console.log(group.lists)
+                    }
+                }
+            })
+        }
+    }, [groups])
+
     const refreshBoard = async () => {
         setGroups([])
         setCurrentText('')
@@ -188,20 +210,14 @@ const Board = () => {
     useEffect(() => {
 
         let maxCardCount = 0;
-        let maxColumnCount = 0;
 
         groups.forEach(group => {
-            if (group.lists.length > maxColumnCount) {
-                maxColumnCount = group.lists.length
-            }
-            group.lists.forEach(list => {
-                if (list.length > maxCardCount) {
-                    maxCardCount = list.length
+            if (group.lists.length > maxCardCount) {
+                    maxCardCount = group.lists.length
                 }
-            })
         })
 
-        const columnWidth = windowWidth / maxColumnCount;
+        const columnWidth = windowWidth;
 
         let tempCardSize = MAX_CARD_SIZE;
 
@@ -228,19 +244,6 @@ const Board = () => {
     const renderGroupItems = useMemo<React.ReactNode>(() => {
         if (!cardSize) return null;
         return groups.map(g => {
-            const colons = g.lists.map((ids, index) => (
-                <CardColumn
-                    ids={ids}
-                    onDrag={handleDrag}
-                    onDrop={onDrop}
-                    display={activeGroupId === g.id}
-                    activeCards={insideIds}
-                    key={index}
-                    cardSize={cardSize}
-                    last={index === g.lists.length - 1}
-                    currentDraggedInside={currentDraggedInside}
-                />
-            ))
             return (
                 <View style={{
                     position: "absolute",
@@ -248,7 +251,16 @@ const Board = () => {
                     width: windowWidth,
                     flexDirection: "row",
                 }} key={g.id}>
-                    {colons}
+                    <CardColumn
+                        ids={g.lists}
+                        onDrag={handleDrag}
+                        onDrop={onDrop}
+                        display={activeGroupId === g.id}
+                        activeCards={insideIds}
+                        cardSize={cardSize}
+                        last={true}
+                        currentDraggedInside={currentDraggedInside}
+                    />
                 </View>
             )
         })
@@ -330,7 +342,7 @@ const Board = () => {
                     <View style={style.arrowWrap}>
                         <View style={[style.arrow, { backgroundColor: theme.colors.primary }]} />
                         <View style={style.arrowHead}>
-                            <AntDesign name="caretright" size={25} color={theme.colors.primary} />
+                            <AntDesign name="caret-right" size={25} color={theme.colors.primary} />
                         </View>
                     </View>
                     <View style={style.readLineControls}>

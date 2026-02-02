@@ -52,14 +52,14 @@ export interface Group {
     id: number
     name: string
     color: string
-    lists: number[][]
+    lists: number[]
 }
 
 export interface FinalGroup {
     id: number
     name: string
     color: string
-    lists: Item[][]
+    lists: Item[]
     listsMap: number[][]
 }
 

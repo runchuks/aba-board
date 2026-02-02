@@ -13,17 +13,17 @@ const EditGroup = () => {
 
     const [group, setGroup] = useState<FinalGroup | null>(null)
 
-    const getListItems = async (ids: number[][]): Promise<Item[][]> => {
+    const getListItems = async (ids: number[]): Promise<Item[]> => {
         try {
-            const listsPromises = ids.map(async (itemIds) => {
-                if (itemIds) {
-                    const lists = await STORAGE.getItemsByIds(itemIds);
-                    return lists || [];
-                }
-                return [];
-            });
+            // const listsPromises = ids.map(async (itemIds) => {
+            //     if (itemIds) {
+            //         const lists = await STORAGE.getItemsByIds(itemIds);
+            //         return lists || [];
+            //     }
+            //     return [];
+            // });
 
-            const listsFinal = await Promise.all(listsPromises);
+            const listsFinal = await STORAGE.getItemsByIds(ids);
             return listsFinal;
         } catch (error) {
             console.error('Error fetching items:', error);
@@ -36,6 +36,7 @@ const EditGroup = () => {
         STORAGE.getGroup(Number(groupId)).then(result => {
             if (result) {
                 getListItems(result.lists).then(items => {
+                    console.log('List items fetched:', items);
                     const returnValues = {
                         ...result,
                         lists: items,

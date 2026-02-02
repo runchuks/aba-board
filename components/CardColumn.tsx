@@ -21,6 +21,7 @@ const CardColumn: FC<Props> = ({ ids, onDrag, onDrop, display, activeCards, card
 
     const getItems = () => {
         STORAGE.getItemsByIds(ids).then(values => {
+            console.log('Fetched items for CardColumn:', values);
             if (values) {
                 const idMap = new Map(ids.map((id, index) => [id, index]));
                 const newValues = values.sort((a, b) => (idMap.get(a.id) ?? 0) - (idMap.get(b.id) ?? 0));
@@ -65,7 +66,8 @@ const CardColumn: FC<Props> = ({ ids, onDrag, onDrop, display, activeCards, card
                         top={top}
                         cardSize={cardSize}
                         image={item.image}
-                        active={activeCards.includes(item.id) || currentDraggedInside === item.id}
+                        // active={activeCards.includes(item.id) || currentDraggedInside === item.id}
+                        active={false}
                     />
                 )
             })

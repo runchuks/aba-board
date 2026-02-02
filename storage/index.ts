@@ -194,7 +194,7 @@ const createStarterBoard = async (userId: number) => {
     // Step 3: Insert new group
     const { lastInsertRowId: lastGroupInserted } = await db.runAsync(
       `INSERT INTO groups (name, color, lists) VALUES (?, ?, ?);`,
-      ['Group 1', '#ffddc1', JSON.stringify([[],[],[]])]
+      ['Group 1', '#ffddc1', JSON.stringify([])]
     );
 
     // Step 4: Link board and group in the board_groups table
@@ -206,7 +206,7 @@ const createStarterBoard = async (userId: number) => {
 
     const { lastInsertRowId: lastGroup1Inserted } = await db.runAsync(
       `INSERT INTO groups (name, color, lists) VALUES (?, ?, ?);`,
-      ['Group 2', '#65a8c7', JSON.stringify([[],[],[]])]
+      ['Group 2', '#65a8c7', JSON.stringify([])]
     );
 
     // Step 4: Link board and group in the board_groups table
@@ -345,7 +345,7 @@ const addGroup = async (boardId: number, name = 'New group') => {
 
     const { lastInsertRowId } = await db.runAsync(
       `INSERT INTO groups (name, color, lists) VALUES (?, ?, ?);`,
-      [name, '#ffffff', JSON.stringify([[],[],[]])]
+      [name, '#ffffff', JSON.stringify([])]
     );
     console.log("Group added successfully!", lastInsertRowId);
 
@@ -524,10 +524,31 @@ const getAllItemsAsRecord = async (): Promise<Record<number, Item>> => {
 const enableForeignKeys = async () => {
   const db = await getDatabase();
   try {
+    const enabled = await checkForeignKeysEnabled();
+    if (enabled) {
+      console.log("DB: Foreign keys already enabled.");
+      return true;
+    }
+
     await db.runAsync('PRAGMA foreign_keys = ON;');
     console.log("DB: Foreign keys enabled!");
+    return true;
   } catch (error) {
     console.error("DB: Error enabling foreign keys:", error);
+  }
+};
+
+const checkForeignKeysEnabled = async (): Promise<boolean> => {
+  const db = await getDatabase();
+  try {
+    const result: any = await db.getFirstAsync('PRAGMA foreign_keys;');
+    if (!result) return false;
+
+    const value = Object.values(result)[0];
+    return !!value;
+  } catch (error) {
+    console.error("DB: Error checking foreign_keys pragma:", error);
+    return false;
   }
 };
 
@@ -611,6 +632,7 @@ const STORAGE = {
   deleteUserById,
   createStarterBoard,
   migration,
+  checkForeignKeysEnabled,
   enableForeignKeys,
   getBoard,
   getBoardById,
