@@ -1,11 +1,10 @@
 import STYLES from '@/constants/styles';
-import { CameraView, CameraType, useCameraPermissions } from 'expo-camera';
-import { FC, useCallback, useEffect, useRef, useState } from 'react';
+import { CameraView, useCameraPermissions } from 'expo-camera';
+import { FC, useCallback, useRef, useState } from 'react';
 import { TouchableOpacity, View, Text, TextInput, Button, Image } from 'react-native';
 import AntDesign from '@expo/vector-icons/AntDesign';
 import Ionicons from '@expo/vector-icons/Ionicons';
 import useTranslation from '@/localization';
-import * as FileSystem from 'expo-file-system';
 import MaterialCommunityIcons from '@expo/vector-icons/MaterialCommunityIcons';
 
 interface Props {
